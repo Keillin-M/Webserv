@@ -6,14 +6,14 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:17 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/02 13:27:16 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/02 14:15:17 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
 
-#include <cstring>
+#include <string>
 
 class Request {
 	private:

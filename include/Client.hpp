@@ -6,14 +6,14 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:08 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/02 13:26:38 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/02 14:15:13 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 
-#include <cstring>
+#include <string>
 
 class Client {
 	private:

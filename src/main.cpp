@@ -6,14 +6,14 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:41 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/02 13:31:11 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/02 14:14:42 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "include/Server.hpp"
+#include "../include/Server.hpp"
 
 int main() {
 	Server server(8080);
-	Server.run();
-	Return 0;
+	server.run();
+	return 0;
 }

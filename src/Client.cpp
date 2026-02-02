@@ -12,8 +12,16 @@
 
 #include "../include/Client.hpp"
 
-Client::Client(int fd) : fd(fd) {
-
-}
+Client::Client(int fd) : fd(fd), readBuffer(), writeBuffer(), keepAlive(false) {}
 
 int Client::getFd() const { return fd;}
+
+void Client::appendRead(const char* data, size_t n) { readBuffer.append(data, data + n); }
+
+std::string Client::getReadBuffer() const { return readBuffer; }
+
+void Client::appendWrite(const std::string& s) { writeBuffer.append(s); }		
+bool Client::hasWrite() const { return !writeBuffer.empty(); }
+std::string& Client::getWriteBuffer() { return writeBuffer; }
+void Client::setKeepAlive(bool v) { keepAlive = v; }
+bool Client::isKeepAlive() const { return keepAlive; }

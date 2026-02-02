@@ -39,7 +39,7 @@ void Server::run() {
 	while (true) {
 		// STEP 1: Rebuild poll array each iteration (option B)
 		// Index 0 = listen fd, index 1..N = connected clients
-		std::vector<struct pollfd> pollFds; //cria um vetor vazio pra guardar os fds
+		std::vector<struct pollfd> pollFds; //creates a empty vector to store the fds
 		struct pollfd pfd;
 
 		pfd.fd = listenFd;
@@ -47,9 +47,11 @@ void Server::run() {
 		pfd.revents = 0;
 		pollFds.push_back(pfd);
 
-		for (size_t i = 0; i < clients.size(); i++) {
-			pfd.fd = clients[i];
-			pfd.events = POLLIN;
+		// add each client fd from the map
+		for (std::map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it) {
+			pfd.fd = it->first;
+			// request read events, and ask for POLLOUT only if there's pending data
+			pfd.events = POLLIN | (it->second.hasWrite() ? POLLOUT : 0);
 			pfd.revents = 0;
 			pollFds.push_back(pfd);
 		}
@@ -70,27 +72,79 @@ void Server::run() {
 				// (subject) "non-blocking at all times"
 				int clientFlags = fcntl(clientFd, F_GETFL, 0);
 				fcntl(clientFd, F_SETFL, clientFlags | O_NONBLOCK);
-				clients.push_back(clientFd);
+				clients.insert(std::make_pair(clientFd, Client(clientFd)));
 			}
 		}
-
-		// STEP 4: POLLIN on client fd = data available to read
-		for (size_t i = 0; i < clients.size(); i++) {
-			if (!(pollFds[i + 1].revents & POLLIN))
+		// STEP 4: process client events; pollFds[0] is listen fd, remaining entries map to clients
+		for (size_t idx = 1; idx < pollFds.size(); ++idx) {
+			struct pollfd &entry = pollFds[idx];
+			int cfd = entry.fd;
+			if (!(entry.revents & POLLIN))
 				continue;
 
-			char buf[4096];
-			ssize_t bytesRead = recv(clients[i], buf, sizeof(buf), 0);
+			auto it = clients.find(cfd);
+			if (it == clients.end())
+				continue; // client might have been removed
 
-			if (bytesRead > 0) {
-				// TODO: store in client buffer, parse HTTP request
-				(void)buf;
-			} else {
-				// Client disconnected or error - close and remove
-				close(clients[i]); //close socket
-				clients[i] = clients.back();
-				clients.pop_back(); //remove from vector
-				i--;
+			// HANDLE READ
+			if (entry.revents & POLLIN) {
+				char buf[4096];
+				ssize_t bytesRead = recv(cfd, buf, sizeof(buf), 0);
+
+				if (bytesRead > 0) {
+					// store in client's read buffer
+					it->second.appendRead(buf, static_cast<size_t>(bytesRead));
+					// TODO: parse HTTP request from it->second.read_buffer() and prepare response
+				} else if (bytesRead == 0) {
+					// peer closed connection
+					close(cfd);
+					clients.erase(it);
+					continue;
+				} else {
+					// bytesRead < 0: error
+					if (errno == EAGAIN || errno == EWOULDBLOCK) {
+						// no data now
+					} else {
+						close(cfd);
+						clients.erase(it);
+						continue;
+					}
+				}
+			}
+
+			// HANDLE WRITE
+			if (entry.revents & POLLOUT) {
+				std::string &out = it->second.getWriteBuffer();
+				while (!out.empty()) {
+					ssize_t sent = send(cfd, out.data(), out.size(), 0);
+					if (sent > 0) {
+						out.erase(0, static_cast<size_t>(sent));
+						continue;
+					}
+					if (sent < 0) {
+						if (errno == EAGAIN || errno == EWOULDBLOCK) {
+							// socket temporarily not writable
+							break;
+						}
+						if (errno == EINTR) {
+							continue; // retry
+						}
+						// fatal write error
+						close(cfd);
+						clients.erase(it);
+						break;
+					}
+				}
+
+				// if all data sent, close unless keep-alive is set
+				if (it != clients.end()) {
+					if (it->second.getWriteBuffer().empty()) {
+						if (!it->second.isKeepAlive()) {
+							close(cfd);
+							clients.erase(it);
+						}
+					}
+				}
 			}
 		}
 	}

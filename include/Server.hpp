@@ -18,14 +18,17 @@
 #include <vector>
 #include <poll.h>
 #include <sys/socket.h>
+#include <map>
+#include "Client.hpp"
+
+class Client;
 
 class Server {
 	private:
 		int listenFd; //listens the socket fd
 		int port;
 		struct sockaddr address; //socket address
-
-		std::vector<int> clients;
+		std::map<int, Client> clients;
 
 	public:
 		Server(int port);

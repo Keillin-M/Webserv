@@ -6,8 +6,11 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:49 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/02 12:57:50 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/02 13:33:15 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/Server.hpp"
+
+Server::Server(int port) : listenFd(-1) {}
+

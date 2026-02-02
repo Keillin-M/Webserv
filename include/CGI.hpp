@@ -10,4 +10,17 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#ifndef CGI_HPP
+#define CGI_HPP
 
+#include <string>
+#include <iostream>
+
+class CGI {
+	private:
+	
+	public:
+		CGI();
+};
+
+#endif

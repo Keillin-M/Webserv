@@ -1,0 +1,100 @@
+# Prerequisites
+*.d
+
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Linker output
+*.ilk
+*.map
+*.exp
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Kernel Module Compile Results
+*.mod*
+*.cmd
+.tmp_versions/
+modules.order
+Module.symvers
+Mkfile.old
+dkms.conf
+
+# debug information files
+*.dwo
+
+# VS Code files
+.vscode/
+*.code-workspace
+
+# Swap files
+*.swp
+*.swo.DS_Store
+.DS_Store 
+
+# Docker related
+*.pid
+*.seed
+*.log
+*.tmp
+*.swp
+*.sock
+*.db
+
+# Build artifacts
+*.o
+*.a
+*.so
+*.dSYM/
+vgcore.*
+
+# Executáveis
+webserv
+
+# Build directory
+build/
+*.o
+*.a
+
+# Test files temporários
+/tmp/
+
+# Docker local configs
+.docker/
+docker-compose.override.yml
+
+# Editor
+.vscode/
+.cursor/
+.docs/

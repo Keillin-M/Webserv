@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: tmarcos <tmarcos@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:56:57 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/02 16:38:02 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/02 17:09:55 by tmarcos          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,14 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
+#include <poll.h>
+#include <sys/socket.h>
 
 class Server {
 	private:
 		int listenFd; //listens the socket fd
 		int port;
-		struct sockaddr address; //socket address
-
 		std::vector<int> clients;
 
 	public:

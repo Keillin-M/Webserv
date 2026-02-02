@@ -136,6 +136,8 @@ void Server::run() {
 					}
 				}
 
+				retirar errnos, no possible
+
 				// if all data sent, close unless keep-alive is set
 				if (it != clients.end()) {
 					if (it->second.getWriteBuffer().empty()) {

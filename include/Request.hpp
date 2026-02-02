@@ -6,18 +6,23 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:17 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/02 12:57:18 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/02 13:27:16 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef REQUEST_HPP
-# define REQUEST_HPP
+#define REQUEST_HPP
+
+#include <cstring>
 
 class Request {
 	private:
-			
-	public:
+		std::string method;
+		std::string path;
+		std::string version;
 	
+	public:
+		Request();
 };
 
 #endif

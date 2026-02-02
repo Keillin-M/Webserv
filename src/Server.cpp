@@ -6,7 +6,7 @@
 /*   By: tmarcos <tmarcos@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:49 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/02 17:12:51 by tmarcos          ###   ########.fr       */
+/*   Updated: 2026/02/02 18:07:25 by tmarcos          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,82 +18,79 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-Server::Server(int port) : listenFd(-1), port(port) {(void)port;}
+Server::Server(int port) : listenFd(-1), port(port) {}
 
 void Server::run() {
-	// Create socket and bind
-	listenFd = socket(AF_INET, SOCK_STREAM, 0); //IPv4, TCP, default protocol
-	bind(listenFd, (struct sockaddr *)&address, sizeof(address));
+	listenFd = socket(AF_INET, SOCK_STREAM, 0);
+
+	struct sockaddr_in addr;
+	std::memset(&addr, 0, sizeof(addr));
+	addr.sin_family = AF_INET;
+	addr.sin_addr.s_addr = INADDR_ANY;
+	addr.sin_port = htons(static_cast<unsigned short>(port));
+
+	bind(listenFd, (struct sockaddr *)&addr, sizeof(addr));
 	listen(listenFd, SOMAXCONN);
-	
-	// Fix non-blocking
-	int flags = fcntl(listenFd, F_GETFL, 0); // get file status flags
+
+	// (subject) "non-blocking at all times"
+	int flags = fcntl(listenFd, F_GETFL, 0);
 	fcntl(listenFd, F_SETFL, flags | O_NONBLOCK);
 
 	while (true) {
-		// ========== STEP 1: Build poll array ==========
-		// Em cada iteracao, montamos o array de fds a vigiar
-		// Indice 0 = listen fd, indices 1..N = clientes
-		std::vector<struct pollfd> pollFds;
+		// STEP 1: Rebuild poll array each iteration (option B)
+		// Index 0 = listen fd, index 1..N = connected clients
+		std::vector<struct pollfd> pollFds; //cria um vetor vazio pra guardar os fds
 		struct pollfd pfd;
 
-		// Adicionar o listen fd (queremos saber quando ha nova conexao)
 		pfd.fd = listenFd;
-		pfd.events = POLLIN;  // POLLIN = "ha dados para ler" = nova conexao
+		pfd.events = POLLIN;
 		pfd.revents = 0;
 		pollFds.push_back(pfd);
 
-		// Adicionar cada cliente conectado
 		for (size_t i = 0; i < clients.size(); i++) {
 			pfd.fd = clients[i];
-			pfd.events = POLLIN;  // queremos saber quando o cliente envia dados
+			pfd.events = POLLIN;
 			pfd.revents = 0;
 			pollFds.push_back(pfd);
 		}
 
-		// ========== STEP 2: Wait for activity ==========
-		// poll() bloqueia ate algum fd ter actividade (ou timeout)
-		// Timeout de 1000ms para nunca ficar pendurado indefinidamente (subject)
+		// STEP 2: Wait until some fd has activity or timeout
+		// (subject) "never hang indefinitely" - timeout 1000ms
 		int ready = poll(&pollFds[0], pollFds.size(), 1000);
 		if (ready < 0) {
-			if (errno == EINTR)  // interrompido por signal, tentar de novo
+			if (errno == EINTR)
 				continue;
-			break;  // erro fatal
+			break;
 		}
 
-		// ========== STEP 3: Handle new connections ==========
-		// Se o listen fd tem POLLIN, ha uma conexao na fila -> accept()
+		// STEP 3: POLLIN on listen fd = new connection waiting
 		if (pollFds[0].revents & POLLIN) {
 			int clientFd = accept(listenFd, NULL, NULL);
 			if (clientFd >= 0) {
-				// Colocar o novo cliente em non-blocking (subject obriga)
+				// (subject) "non-blocking at all times"
 				int clientFlags = fcntl(clientFd, F_GETFL, 0);
 				fcntl(clientFd, F_SETFL, clientFlags | O_NONBLOCK);
-				// Adicionar ao vector de clientes
 				clients.push_back(clientFd);
 			}
 		}
 
-		// ========== STEP 4: Handle client data ==========
-		// Percorrer clientes e verificar quais tem dados para ler
+		// STEP 4: POLLIN on client fd = data available to read
 		for (size_t i = 0; i < clients.size(); i++) {
-			// pollFds[i+1] porque indice 0 e o listen fd
 			if (!(pollFds[i + 1].revents & POLLIN))
 				continue;
 
-			// Ler dados do cliente
-			char buf[4096]; //tamanho alinhado com a memoria do sistema
+			char buf[4096];
 			ssize_t bytesRead = recv(clients[i], buf, sizeof(buf), 0);
 
-			if (bytesRead > 0) {				// TODO: guardar no buffer do cliente, fazer parse do request
+			if (bytesRead > 0) {
+				// TODO: store in client buffer, parse HTTP request
 				(void)buf;
 			} else {
-				// bytesRead <= 0: cliente desconectou ou erro
-				// Fechar fd e remover do vector (swap com ultimo + pop)
-				close(clients[i]);
+				// Client disconnected or error - close and remove
+				close(clients[i]); //close socket
 				clients[i] = clients.back();
-				clients.pop_back();
-				i--;  // para nao saltar o elemento que veio do fim
+				clients.pop_back(); //remove from vector
+				i--;
 			}
 		}
 	}

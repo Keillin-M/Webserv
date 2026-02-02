@@ -6,7 +6,7 @@
 /*   By: tmarcos <tmarcos@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:56:57 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/02 17:09:55 by tmarcos          ###   ########.fr       */
+/*   Updated: 2026/02/02 17:54:15 by tmarcos          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,8 @@ class Server {
 	private:
 		int listenFd; //listens the socket fd
 		int port;
+		struct sockaddr address; //socket address
+
 		std::vector<int> clients;
 
 	public:

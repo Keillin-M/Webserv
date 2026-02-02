@@ -3,43 +3,38 @@ CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98
 INCLUDES = -I include
 
-GREEN = \033[0;32m
-RED = \033[0;31m
-BLUE = \033[0;34m
-YELLOW = \033[0;33m
-CYAN = \033[0;36m
-RESET = \033[0m
-CHECK = \033[0;34m✔\033[0m
-BOLD = \033[1m
+SRC = src/main.cpp \
+	src/Client.cpp \
+	src/Server.cpp
 
-SRC_DIR = src
-OBJ_DIR = obj
+OBJ = $(SRC:src/%.cpp=obj/%.o)
 
-SRCS = main.cpp \
-	$(SRC_DIR)/ClapTrap.cpp
-
-OBJS = $(SRCS:%.cpp=$(OBJ_DIR)/%.o)
+GREEN		= \033[0;32m
+GRAY		= \033[0;90m
+RED			= \033[0;31m
+RESET		= \033[0m
 
 all: $(NAME)
 
-$(NAME): $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME)
+$(NAME): $(OBJ)
+	@$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJ) -o $(NAME)
+	@echo "$(GREEN)Executable created: $(NAME)$(RESET)"
+	@echo "$(GRAY)Usage: $(RESET)./$(NAME) + <config file>"
 
-$(OBJ_DIR)/%.o: %.cpp | $(OBJ_DIR)
+obj/%.o: src/%.cpp
 	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
-
-$(OBJ_DIR):
-	@mkdir -p $(OBJ_DIR)
+	@$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
-	@rm -rf $(OBJ_DIR)
+	@$(RM) $(OBJ)
+	@$(RM) -r obj
+	@echo "$(RED)Cleaned object files.$(RESET)"
 
 fclean: clean
-	@rm -f $(NAME)
+	@$(RM) $(NAME)
+	@echo "$(RED)Fully cleaned everything.$(RESET)"
 
 re: fclean all
 
-.PHONY: all clean fclean re   
-
+.PHONY: all clean fclean re
 

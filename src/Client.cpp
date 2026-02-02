@@ -11,3 +11,9 @@
 /* ************************************************************************** */
 
 #include "../include/Client.hpp"
+
+Client::Client(int fd) : fd(fd) {
+
+}
+
+int Client::getFd() const { return fd;}

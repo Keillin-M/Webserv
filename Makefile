@@ -5,7 +5,9 @@ INCLUDES = -I include
 
 SRC = src/main.cpp \
 	src/Client.cpp \
-	src/Server.cpp
+	src/Server.cpp \
+	src/Request.cpp \
+	src/Response.cpp
 
 OBJ = $(SRC:src/%.cpp=obj/%.o)
 

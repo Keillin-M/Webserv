@@ -14,17 +14,17 @@
 #define CLIENT_HPP
 
 #include <string>
+#include <iostream>
 
 class Client {
 	private:
-		int fd;
-		std::string readBuffer;
-		std::string writeBuffer;
+		int fd; // client socket fd
+		std::string readBuffer; // placeholder for incoming data
+		std::string writeBuffer; // placeholder for outcoming data
 		
 	public:
 		Client(int fd);
-		
-		int getFd() const;
+		int getFd() const; //normal getter
 };
 
 #endif

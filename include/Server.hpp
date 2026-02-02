@@ -14,16 +14,17 @@
 #define SERVER_HPP
 
 #include <iostream>
+#include <string>
 
 class Server {
 	private:
-		int listenFd;
+		int listenFd; //listens the socket fd
 		int port;
-		
+
 	public:
 		Server(int port);
-		
 		void run();
+		
 };
 
 #endif

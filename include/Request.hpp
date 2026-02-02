@@ -14,10 +14,11 @@
 #define REQUEST_HPP
 
 #include <string>
+#include <iostream>
 
 class Request {
 	private:
-		std::string method;
+		std::string method; // 
 		std::string path;
 		std::string version;
 	

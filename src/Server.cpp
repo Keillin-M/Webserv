@@ -21,13 +21,13 @@
 Server::Server(int port) : listenFd(-1), port(port) {}
 
 void Server::run() {
-	listenFd = socket(AF_INET, SOCK_STREAM, 0);
+	listenFd = socket(AF_INET, SOCK_STREAM, 0); //ipv4, TCP, default
 
 	struct sockaddr_in addr;
-	std::memset(&addr, 0, sizeof(addr));
-	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = INADDR_ANY;
-	addr.sin_port = htons(static_cast<unsigned short>(port));
+	std::memset(&addr, 0, sizeof(addr)); //iniciate memory
+	addr.sin_family = AF_INET;  //ipv4
+	addr.sin_addr.s_addr = INADDR_ANY; //INADDR_ANY = 0.0.0.0.
+	addr.sin_port = htons(static_cast<unsigned short>(port)); //converts the port number to host
 
 	bind(listenFd, (struct sockaddr *)&addr, sizeof(addr));
 	listen(listenFd, SOMAXCONN);

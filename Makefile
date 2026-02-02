@@ -7,7 +7,8 @@ SRC = src/main.cpp \
 	src/Client.cpp \
 	src/Server.cpp \
 	src/Request.cpp \
-	src/Response.cpp
+	src/Response.cpp \
+	src/CGI.cpp
 
 OBJ = $(SRC:src/%.cpp=obj/%.o)
 

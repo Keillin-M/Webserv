@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:56:57 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/03 12:25:58 by gabrsouz         ###   ########.fr       */
+/*   Updated: 2026/02/03 13:55:14 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,8 @@ class Server {
 	public:
 		Server(int port);
 		void run();
-		std::map<int, Client> getClients() const;
+		const std::map<int, Client>& getClients() const;
+		std::map<int, Client>& getClients();
 		void setListenFd(int newFd);
 		int getListenFd() const;
 		

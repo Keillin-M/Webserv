@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:49 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/03 13:00:48 by gabrsouz         ###   ########.fr       */
+/*   Updated: 2026/02/03 14:03:57 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 
 Server::Server(int port) : listenFd(-1), port(port) {}
 
-std::map<int, Client> Server::getClients() const {
+std::map<int, Client>& Server::getClients() {
 	return clients;
 }
 
@@ -32,14 +32,14 @@ int Server::getListenFd() const {
 	return listenFd;
 }
 
-static void iniciate_addr(struct sockaddr_in addr, int port) {
+static void iniciate_addr(struct sockaddr_in& addr, int port) {
 	std::memset(&addr, 0, sizeof(addr)); //iniciate memory
 	addr.sin_family = AF_INET;  //ipv4
 	addr.sin_addr.s_addr = INADDR_ANY; //INADDR_ANY = 0.0.0.0.
 	addr.sin_port = htons(static_cast<unsigned short>(port)); //converts the port number to host
 }
 
-void setup_listen_socket(int listenFd, int port) {
+void setup_listen_socket(int &listenFd, int port) {
 	struct sockaddr_in addr;
 	
 	listenFd = socket(AF_INET, SOCK_STREAM, 0); //ipv4, TCP, default
@@ -52,13 +52,13 @@ void setup_listen_socket(int listenFd, int port) {
 	fcntl(listenFd, F_SETFL, flags | O_NONBLOCK);
 }
 
-void creat_clients(std::vector<struct pollfd> pollFds, struct pollfd pfd, Server serv) {
+void creat_clients(std::vector<struct pollfd>& pollFds, struct pollfd pfd, Server& serv) {
 	pfd.fd = serv.getListenFd();
 	pfd.events = POLLIN;
 	pfd.revents = 0;
 	pollFds.push_back(pfd);
 	// add each client fd from the map
-	std::map<int, Client>::iterator it;
+	std::map<int, Client>::const_iterator it;
 	for (it = serv.getClients().begin(); it != serv.getClients().end(); ++it) {
 		pfd.fd = it->first;
 		// request read events, and ask for POLLOUT only if there's pending data
@@ -68,7 +68,7 @@ void creat_clients(std::vector<struct pollfd> pollFds, struct pollfd pfd, Server
 	}
 }
 
-void pollin_clients(Server serv) {
+void pollin_clients(Server& serv) {
 	int clientFd = accept(serv.getListenFd(), NULL, NULL);
 	if (clientFd >= 0) {
 		// (subject) "non-blocking at all times"
@@ -78,7 +78,7 @@ void pollin_clients(Server serv) {
 	}
 }
 
-void gnl_clients(int cfd, std::map<int, Client>::iterator it, Server serv){
+void gnl_clients(int cfd, std::map<int, Client>::iterator it, Server& serv){
 	char buf[4096];
 	ssize_t bytesRead = recv(cfd, buf, sizeof(buf), 0);
 	if (bytesRead > 0) {
@@ -105,7 +105,7 @@ void handle_write(int cfd, std::map<int, Client>::iterator it) {
 	}
 }
 			
-void closed_empty_fds(int cfd, std::map<int, Client>::iterator it, Server serv){
+void closed_empty_fds(int cfd, std::map<int, Client>::iterator it, Server& serv){
 	if (it->second.getWriteBuffer().empty()) {
 		if (!it->second.isKeepAlive()) {
 			close(cfd);

@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:49 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/03 14:03:57 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/03 15:01:38 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,10 @@
 #include <netinet/in.h>
 
 Server::Server(int port) : listenFd(-1), port(port) {}
+
+const std::map<int, Client>& Server::getClients() const {
+	return clients;
+}
 
 std::map<int, Client>& Server::getClients() {
 	return clients;
@@ -43,6 +47,15 @@ void setup_listen_socket(int &listenFd, int port) {
 	struct sockaddr_in addr;
 	
 	listenFd = socket(AF_INET, SOCK_STREAM, 0); //ipv4, TCP, default
+	if (listenFd < 0) {
+		perror("socket");
+		return;
+	}
+	
+	// Allow immediate restart
+	int opt = 1;
+	setsockopt(listenFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+	
 	iniciate_addr(addr, port);
 	bind(listenFd, (struct sockaddr *)&addr, sizeof(addr));
 	listen(listenFd, SOMAXCONN);
@@ -69,12 +82,19 @@ void creat_clients(std::vector<struct pollfd>& pollFds, struct pollfd pfd, Serve
 }
 
 void pollin_clients(Server& serv) {
-	int clientFd = accept(serv.getListenFd(), NULL, NULL);
-	if (clientFd >= 0) {
+	while (true) {
+		int clientFd = accept(serv.getListenFd(), NULL, NULL);
+		if (clientFd < 0) {
+			if (errno == EWOULDBLOCK || errno == EAGAIN)
+				break; // no more connections waiting
+			perror("accept");
+			break;
+		}
 		// (subject) "non-blocking at all times"
 		int clientFlags = fcntl(clientFd, F_GETFL, 0);
 		fcntl(clientFd, F_SETFL, clientFlags | O_NONBLOCK);
 		serv.getClients().insert(std::make_pair(clientFd, Client(clientFd)));
+		std::cout << "[Server] Client connected: fd=" << clientFd << std::endl;
 	}
 }
 
@@ -89,6 +109,8 @@ void gnl_clients(int cfd, std::map<int, Client>::iterator it, Server& serv){
 		// peer closed connection
 		close(cfd);
 		serv.getClients().erase(it);
+	} else {
+		// < 0: non-blocking, no data available - skip for now
 	}
 }
 
@@ -99,7 +121,7 @@ void handle_write(int cfd, std::map<int, Client>::iterator it) {
 		if (sent > 0) {
 			out.erase(0, static_cast<size_t>(sent));
 			continue;
-		} if (sent < 0)
+		} if (sent <= 0)
 			break; // send failed, stop trying for now
 		// sent == 0, nothing sent, continue
 	}

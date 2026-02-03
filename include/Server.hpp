@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:56:57 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/03 13:55:14 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/03 14:46:31 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,8 +30,8 @@ class Server {
 	public:
 		Server(int port);
 		void run();
-		const std::map<int, Client>& getClients() const;
-		std::map<int, Client>& getClients();
+	const std::map<int, Client>& getClients() const;
+	std::map<int, Client>& getClients();
 		void setListenFd(int newFd);
 		int getListenFd() const;
 		

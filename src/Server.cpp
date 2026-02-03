@@ -6,7 +6,7 @@
 /*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:49 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/03 11:44:46 by gabrsouz         ###   ########.fr       */
+/*   Updated: 2026/02/03 13:00:48 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,21 +20,102 @@
 
 Server::Server(int port) : listenFd(-1), port(port) {}
 
-void Server::run() {
-	listenFd = socket(AF_INET, SOCK_STREAM, 0); //ipv4, TCP, default
+std::map<int, Client> Server::getClients() const {
+	return clients;
+}
 
-	struct sockaddr_in addr;
+void Server::setListenFd(int newFd) {
+	listenFd = newFd;
+}
+
+int Server::getListenFd() const {
+	return listenFd;
+}
+
+static void iniciate_addr(struct sockaddr_in addr, int port) {
 	std::memset(&addr, 0, sizeof(addr)); //iniciate memory
 	addr.sin_family = AF_INET;  //ipv4
 	addr.sin_addr.s_addr = INADDR_ANY; //INADDR_ANY = 0.0.0.0.
 	addr.sin_port = htons(static_cast<unsigned short>(port)); //converts the port number to host
+}
 
+void setup_listen_socket(int listenFd, int port) {
+	struct sockaddr_in addr;
+	
+	listenFd = socket(AF_INET, SOCK_STREAM, 0); //ipv4, TCP, default
+	iniciate_addr(addr, port);
 	bind(listenFd, (struct sockaddr *)&addr, sizeof(addr));
 	listen(listenFd, SOMAXCONN);
 
 	// (subject) "non-blocking at all times"
 	int flags = fcntl(listenFd, F_GETFL, 0);
 	fcntl(listenFd, F_SETFL, flags | O_NONBLOCK);
+}
+
+void creat_clients(std::vector<struct pollfd> pollFds, struct pollfd pfd, Server serv) {
+	pfd.fd = serv.getListenFd();
+	pfd.events = POLLIN;
+	pfd.revents = 0;
+	pollFds.push_back(pfd);
+	// add each client fd from the map
+	std::map<int, Client>::iterator it;
+	for (it = serv.getClients().begin(); it != serv.getClients().end(); ++it) {
+		pfd.fd = it->first;
+		// request read events, and ask for POLLOUT only if there's pending data
+		pfd.events = POLLIN | (it->second.hasWrite() ? POLLOUT : 0);
+		pfd.revents = 0;
+		pollFds.push_back(pfd);
+	}
+}
+
+void pollin_clients(Server serv) {
+	int clientFd = accept(serv.getListenFd(), NULL, NULL);
+	if (clientFd >= 0) {
+		// (subject) "non-blocking at all times"
+		int clientFlags = fcntl(clientFd, F_GETFL, 0);
+		fcntl(clientFd, F_SETFL, clientFlags | O_NONBLOCK);
+		serv.getClients().insert(std::make_pair(clientFd, Client(clientFd)));
+	}
+}
+
+void gnl_clients(int cfd, std::map<int, Client>::iterator it, Server serv){
+	char buf[4096];
+	ssize_t bytesRead = recv(cfd, buf, sizeof(buf), 0);
+	if (bytesRead > 0) {
+		// store in client's read buffer
+		it->second.appendRead(buf, static_cast<size_t>(bytesRead));
+		// TODO: parse HTTP request from it->second.read_buffer() and prepare response
+	} else if (bytesRead == 0) {
+		// peer closed connection
+		close(cfd);
+		serv.getClients().erase(it);
+	}
+}
+
+void handle_write(int cfd, std::map<int, Client>::iterator it) {
+	std::string &out = it->second.getWriteBuffer();
+	while (!out.empty()) {
+		ssize_t sent = send(cfd, out.data(), out.size(), 0);
+		if (sent > 0) {
+			out.erase(0, static_cast<size_t>(sent));
+			continue;
+		} if (sent < 0)
+			break; // send failed, stop trying for now
+		// sent == 0, nothing sent, continue
+	}
+}
+			
+void closed_empty_fds(int cfd, std::map<int, Client>::iterator it, Server serv){
+	if (it->second.getWriteBuffer().empty()) {
+		if (!it->second.isKeepAlive()) {
+			close(cfd);
+			serv.getClients().erase(it);
+		}
+	}
+}			
+
+void Server::run() {
+	setup_listen_socket(listenFd, port);
 
 	while (true) {
 		// STEP 1: Rebuild poll array each iteration (option B)
@@ -42,19 +123,7 @@ void Server::run() {
 		std::vector<struct pollfd> pollFds; //creates a empty vector to store the fds
 		struct pollfd pfd;
 
-		pfd.fd = listenFd;
-		pfd.events = POLLIN;
-		pfd.revents = 0;
-		pollFds.push_back(pfd);
-
-		// add each client fd from the map
-		for (std::map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it) {
-			pfd.fd = it->first;
-			// request read events, and ask for POLLOUT only if there's pending data
-			pfd.events = POLLIN | (it->second.hasWrite() ? POLLOUT : 0);
-			pfd.revents = 0;
-			pollFds.push_back(pfd);
-		}
+		creat_clients(pollFds, pfd, *this);
 
 		// STEP 2: Wait until some fd has activity or timeout
 		// (subject) "never hang indefinitely" - timeout 1000ms
@@ -64,17 +133,9 @@ void Server::run() {
 				continue;
 			break;
 		}
-
 		// STEP 3: POLLIN on listen fd = new connection waiting
-		if (pollFds[0].revents & POLLIN) {
-			int clientFd = accept(listenFd, NULL, NULL);
-			if (clientFd >= 0) {
-				// (subject) "non-blocking at all times"
-				int clientFlags = fcntl(clientFd, F_GETFL, 0);
-				fcntl(clientFd, F_SETFL, clientFlags | O_NONBLOCK);
-				clients.insert(std::make_pair(clientFd, Client(clientFd)));
-			}
-		}
+		if (pollFds[0].revents & POLLIN)
+			pollin_clients(*this);		
 		// STEP 4: process client events; pollFds[0] is listen fd, remaining entries map to clients
 		for (size_t idx = 1; idx < pollFds.size(); ++idx) {
 			struct pollfd &entry = pollFds[idx];
@@ -85,49 +146,16 @@ void Server::run() {
 				continue; // client might have been removed
 
 			// HANDLE READ
-			if (entry.revents & POLLIN) {
-				char buf[4096];
-				ssize_t bytesRead = recv(cfd, buf, sizeof(buf), 0);
-
-				if (bytesRead > 0) {
-					// store in client's read buffer
-					it->second.appendRead(buf, static_cast<size_t>(bytesRead));
-					// TODO: parse HTTP request from it->second.read_buffer() and prepare response
-				} else if (bytesRead == 0) {
-					// peer closed connection
-					close(cfd);
-					clients.erase(it);
-					continue;
-				} else {
-					// bytesRead < 0: non-blocking socket has no data available or error occurred
-					// continue to next iteration without closing connection
-				}
-			}
+			if (entry.revents & POLLIN)
+				gnl_clients(cfd, it, *this);
 
 			// HANDLE WRITE
-			if (entry.revents & POLLOUT) {
-				std::string &out = it->second.getWriteBuffer();
-				while (!out.empty()) {
-					ssize_t sent = send(cfd, out.data(), out.size(), 0);
-					if (sent > 0) {
-						out.erase(0, static_cast<size_t>(sent));
-						continue;
-					} if (sent < 0) {
-						break; // send failed, stop trying for now
-					}
-					// sent == 0, nothing sent, continue
-				}
+			if (entry.revents & POLLOUT) 
+				handle_write(cfd, it);
 
 				// if all data sent, close unless keep-alive is set
-				if (it != clients.end()) {
-					if (it->second.getWriteBuffer().empty()) {
-						if (!it->second.isKeepAlive()) {
-							close(cfd);
-							clients.erase(it);
-						}
-					}
-				}
-			}
+			if (it != clients.end()) 
+				closed_empty_fds(cfd, it, *this);
 		}
 	}
 }

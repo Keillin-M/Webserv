@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:08 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/02 14:15:13 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/03 11:22:15 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ class Client {
 
 	public:
 		Client(int fd);
-		int getFd() const { return fd; }
+		int getFd() const;
 
 		// read buffer accessors
 		void appendRead(const char* data, size_t n);

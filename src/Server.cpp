@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tmarcos <tmarcos@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:49 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/02 18:07:25 by tmarcos          ###   ########.fr       */
+/*   Updated: 2026/02/03 11:44:46 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,10 +79,8 @@ void Server::run() {
 		for (size_t idx = 1; idx < pollFds.size(); ++idx) {
 			struct pollfd &entry = pollFds[idx];
 			int cfd = entry.fd;
-			if (!(entry.revents & POLLIN))
-				continue;
 
-			auto it = clients.find(cfd);
+			std::map<int, Client>::iterator it = clients.find(cfd);
 			if (it == clients.end())
 				continue; // client might have been removed
 
@@ -101,14 +99,8 @@ void Server::run() {
 					clients.erase(it);
 					continue;
 				} else {
-					// bytesRead < 0: error
-					if (errno == EAGAIN || errno == EWOULDBLOCK) {
-						// no data now
-					} else {
-						close(cfd);
-						clients.erase(it);
-						continue;
-					}
+					// bytesRead < 0: non-blocking socket has no data available or error occurred
+					// continue to next iteration without closing connection
 				}
 			}
 
@@ -120,23 +112,11 @@ void Server::run() {
 					if (sent > 0) {
 						out.erase(0, static_cast<size_t>(sent));
 						continue;
+					} if (sent < 0) {
+						break; // send failed, stop trying for now
 					}
-					if (sent < 0) {
-						if (errno == EAGAIN || errno == EWOULDBLOCK) {
-							// socket temporarily not writable
-							break;
-						}
-						if (errno == EINTR) {
-							continue; // retry
-						}
-						// fatal write error
-						close(cfd);
-						clients.erase(it);
-						break;
-					}
+					// sent == 0, nothing sent, continue
 				}
-
-				retirar errnos, no possible
 
 				// if all data sent, close unless keep-alive is set
 				if (it != clients.end()) {

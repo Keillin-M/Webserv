@@ -6,7 +6,7 @@
 /*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:56:57 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/03 11:27:30 by gabrsouz         ###   ########.fr       */
+/*   Updated: 2026/02/03 12:25:58 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,9 @@ class Server {
 	public:
 		Server(int port);
 		void run();
+		std::map<int, Client> getClients() const;
+		void setListenFd(int newFd);
+		int getListenFd() const;
 		
 };
 

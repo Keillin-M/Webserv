@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:17 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/02 14:15:17 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/04 16:55:10 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,12 @@ class Request {
 		std::string version;
 	
 	public:
-		Request();
+		Request();	
+		
+		std::string getMethod() const;
+		std::string getPath() const;
+		std::string getVersion() const;
+		void parse(const std::string& rawRequest); //Gab parsing
 };
 
 #endif

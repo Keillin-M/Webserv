@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:26 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/03 11:45:19 by gabrsouz         ###   ########.fr       */
+/*   Updated: 2026/02/05 16:25:32 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include <string>
 #include <iostream>
+#include <sstream>
 
 class Response {
 	private:
@@ -22,7 +23,8 @@ class Response {
 		std::string body;
 	
 	public:
-		Response(int statusCode);
+		Response();
+		std::string buildResponse(int statusCode);
 };
 
 #endif

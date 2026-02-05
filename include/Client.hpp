@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:08 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/03 11:22:15 by gabrsouz         ###   ########.fr       */
+/*   Updated: 2026/02/04 18:16:08 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ class Client {
 		// read buffer accessors
 		void appendRead(const char* data, size_t n);
 		std::string getReadBuffer() const;
+		bool requestCompleteCheck() const;
 
 		// write buffer accessors
 		void appendWrite(const std::string& s);
@@ -38,6 +39,7 @@ class Client {
 		void setKeepAlive(bool v);
 		bool isKeepAlive() const;
 
+		void clearReadBuffer();
 };
 
 #endif

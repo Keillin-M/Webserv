@@ -6,17 +6,20 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:49 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/03 15:01:38 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/04 18:25:10 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/Server.hpp"
+#include "../include/Request.hpp"
 #include <cerrno>
 #include <cstring>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <iostream>
+#include <sstream>
 
 Server::Server(int port) : listenFd(-1), port(port) {}
 
@@ -48,7 +51,7 @@ void setup_listen_socket(int &listenFd, int port) {
 	
 	listenFd = socket(AF_INET, SOCK_STREAM, 0); //ipv4, TCP, default
 	if (listenFd < 0) {
-		perror("socket");
+		std::cerr << "socket error: " << strerror(errno) << std::endl;
 		return;
 	}
 	
@@ -65,7 +68,7 @@ void setup_listen_socket(int &listenFd, int port) {
 	fcntl(listenFd, F_SETFL, flags | O_NONBLOCK);
 }
 
-void creat_clients(std::vector<struct pollfd>& pollFds, struct pollfd pfd, Server& serv) {
+void create_clients(std::vector<struct pollfd>& pollFds, struct pollfd pfd, Server& serv) {
 	pfd.fd = serv.getListenFd();
 	pfd.events = POLLIN;
 	pfd.revents = 0;
@@ -87,7 +90,7 @@ void pollin_clients(Server& serv) {
 		if (clientFd < 0) {
 			if (errno == EWOULDBLOCK || errno == EAGAIN)
 				break; // no more connections waiting
-			perror("accept");
+			std::cerr << "accept error: " << strerror(errno) << std::endl;
 			break;
 		}
 		// (subject) "non-blocking at all times"
@@ -98,6 +101,39 @@ void pollin_clients(Server& serv) {
 	}
 }
 
+static std::string buildResponse(int statusCode) {
+	std::string body;
+	std::string statusText;
+	
+	if (statusCode == 200) {
+		statusText = "OK";
+		body = "Hello, world!";
+	} else if (statusCode == 404) {
+		statusText = "Not Found";
+		body = "404 Not found";
+	} else {
+		statusText = "Internal Server Error";
+		body = "500 Internal Server Error";
+	}
+	
+	std::ostringstream oss;
+	oss << statusCode;
+	std::string statusCodeStr = oss.str();
+	
+	std::ostringstream oss2;
+	oss2 << body.size();
+	std::string contentLength = oss2.str();
+	
+	std::string response;
+	response += "HTTP/1.1 " + statusCodeStr + " " + statusText + "\r\n";
+	response += "Content-Type: text/plain\r\n";
+	response += "Content-Length: " + contentLength + "\r\n";
+	response += "\r\n"; //End of header
+	response += body;
+	
+	return response;
+}
+
 void gnl_clients(int cfd, std::map<int, Client>::iterator it, Server& serv){
 	char buf[4096];
 	ssize_t bytesRead = recv(cfd, buf, sizeof(buf), 0);
@@ -105,6 +141,16 @@ void gnl_clients(int cfd, std::map<int, Client>::iterator it, Server& serv){
 		// store in client's read buffer
 		it->second.appendRead(buf, static_cast<size_t>(bytesRead));
 		// TODO: parse HTTP request from it->second.read_buffer() and prepare response
+		if (it->second.requestCompleteCheck()) {
+			Request request;
+			request.parse(it->second.getReadBuffer()); // Gab parsing
+			
+			if (request.getMethod() == "GET" && request.getPath() == "/")
+				it->second.appendWrite(buildResponse(200));
+			else
+				it->second.appendWrite(buildResponse(404));
+			it->second.clearReadBuffer();
+		}
 	} else if (bytesRead == 0) {
 		// peer closed connection
 		close(cfd);
@@ -145,7 +191,7 @@ void Server::run() {
 		std::vector<struct pollfd> pollFds; //creates a empty vector to store the fds
 		struct pollfd pfd;
 
-		creat_clients(pollFds, pfd, *this);
+		create_clients(pollFds, pfd, *this);
 
 		// STEP 2: Wait until some fd has activity or timeout
 		// (subject) "never hang indefinitely" - timeout 1000ms

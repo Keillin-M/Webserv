@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:58 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/03 11:22:19 by gabrsouz         ###   ########.fr       */
+/*   Updated: 2026/02/04 18:20:18 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,19 @@ void Client::appendRead(const char* data, size_t n) { readBuffer.append(data, da
 
 std::string Client::getReadBuffer() const { return readBuffer; }
 
-void Client::appendWrite(const std::string& s) { writeBuffer.append(s); }		
+// HTTP request ends with \r\n\r\n (carriage return + line feed, twice - marks end of header)
+bool Client::requestCompleteCheck() const { 
+	return readBuffer.find("\r\n\r\n") != std::string::npos;
+}
+
+void Client::appendWrite(const std::string& s) { writeBuffer.append(s); }	
+	
 bool Client::hasWrite() const { return !writeBuffer.empty(); }
+
 std::string& Client::getWriteBuffer() { return writeBuffer; }
+
 void Client::setKeepAlive(bool v) { keepAlive = v; }
+
 bool Client::isKeepAlive() const { return keepAlive; }
+
+void Client::clearReadBuffer() { readBuffer.clear(); }

@@ -6,11 +6,13 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/05 13:17:35 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/06 12:57:06 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/06 16:41:12 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/ConfigParser.hpp"
+#include "../../include/config/ConfigParser.hpp"
+#include "../../include/config/ServerConfig.hpp"
+#include "../../include/config/LocationConfig.hpp"
 
 ConfigParser::ConfigParser() {}
 
@@ -65,26 +67,17 @@ std::vector<std::string> ConfigParser::tokenize(const std::string& content) {
 		if (!quote && c == '#') {
 			skipComment(content, i);
 			continue;
-		}
-		
-		if (c == '"') {
+		} if (c == '"') {
 			handleQuote(c, quote, token, tokens);
 			continue;
-		}
-		
-		if (quote) { // Everything inside quote is added as 1 token
+		} if (quote) { // Everything inside quote is added as 1 token
 			token += c;
 			continue;
-		}
-
-		if (std::isspace(c)) {
+		} if (std::isspace(c)) {
 			handleWhitespace(token, tokens);
-		}
-		
-		if (c == '{' || c == '}' || c == ';') {
+		} if (c == '{' || c == '}' || c == ';') {
 			handleSpecialChar(c, token, tokens);
-		}
-		else
+		} else
 			token += c;
 	}
 	if (!token.empty())
@@ -92,14 +85,53 @@ std::vector<std::string> ConfigParser::tokenize(const std::string& content) {
 	return tokens;
 }
 
-ServerConfig::ServerConfig() {}
+void error(const std::string& msg) {
+	std::cerr << "ConfigParser error: " << msg << std::endl;
+	exit(EXIT_FAILURE);
+}
 
-std::string ServerConfig::getServerName() const {}
 
-std::string ServerConfig::getRoot() const {}
-
-std::map<int, std::string> ServerConfig::getErrorPages() const {}
-
-std::vector<LocationConfig> ServerConfig::getLocations() const {}
+ServerConfig ConfigParser::parseServer(const std::vector<std::string>& tokens, size_t& i) {
+	ServerConfig config;
+	i += 2;  // skip "server" and "{"
 	
-LocationConfig::LocationConfig() {}
+	while (i < tokens.size() && tokens[i] != "}") {
+		if (tokens[i] == "listen") {
+			config.setPort(std::stoi(tokens[++i]));
+			++i; // skip ";"
+		} else if (tokens[i] == "root") { 
+			config.setRoot(tokens[++i]);
+			++i; //skip ";"
+		} else if (tokens[i] == "error_page") {
+			config.addErrorPages(std::stoi(tokens[++i]), tokens[++i]);
+			i++;
+		} else if (tokens[i] == "location") {
+			LocationConfig location;
+			location.setPath(tokens[++i]);
+			++i; // skip "{"
+			while (tokens[i] != "}") {
+				if (tokens[i] == "root") {
+					location.setRoot(tokens[++i]);
+					++i; //skip ";"
+				} else
+					++i; // skip unknown token
+			}
+			++i; //skip "}"
+			config.addLocations(location);
+		} else
+			++i;
+	}
+	++i;
+	return config;
+}
+
+void ConfigParser::parseConfig(const std::vector<std::string>& tokens) {
+	size_t i = 0;
+
+	while (i < tokens.size()) {
+		if (tokens[i] == "server") {
+			servers.push_back(parseServer(tokens, i));
+		} else
+			error("Expected server block");
+	}
+}

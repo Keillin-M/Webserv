@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:49 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/05 16:24:49 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/06 15:18:16 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,7 +105,7 @@ void Server::handleClientRead(int cfd, std::map<int, Client>::iterator it){
 		// TODO: parse HTTP request from it->second.read_buffer() and prepare response
 		if (it->second.requestCompleteCheck()) {
 			Request request;
-			request.parse(it->second.getReadBuffer()); // Gab parsing
+			request.parseRequest(it->second.getReadBuffer());
 			
 			Response response;
 			if (request.getMethod() == "GET" && request.getPath() == "/")

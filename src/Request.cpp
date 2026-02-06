@@ -6,7 +6,7 @@
 /*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:41 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/06 14:55:56 by gabrsouz         ###   ########.fr       */
+/*   Updated: 2026/02/06 15:29:13 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,13 +16,15 @@
 Request::Request() {}
 
 // Parse initial request line: METHOD SP PATH SP VERSION CRLF
-void Request::setParseVariables(const std::string& rawRequest, std::vector<std::string>& parse) {
+void Request::setParseVariables(const std::vector<std::string>& parse) {
 	method.clear();
 	path.clear();
 	version.clear();
 	headers.clear();
     body.clear();
 
+	if (parse.empty())
+		return;
 
 	// Request Line
 	std::istringstream iss(parse[0]);
@@ -33,7 +35,8 @@ void Request::setParseVariables(const std::string& rawRequest, std::vector<std::
 	std::string key, value;
 	for (size_t i = 1; i < parse.size() - 1; i++) {
 		pos = parse[i].find(":");
-        	continue;
+		if (pos == std::string::npos)
+			continue;
 		key = parse[i].substr(0, pos);
 		value = parse[i].substr(pos + 1);
 		size_t start = value.find_first_not_of(" \t");
@@ -46,8 +49,8 @@ void Request::setParseVariables(const std::string& rawRequest, std::vector<std::
 	body = parse.back();
 }
 
-void Request::parseRequest(const std::string& rawRequest, std::vector<std::string>& parse) {
-	parse.clear();
+void Request::parseRequest(const std::string& rawRequest) {
+	std::vector<std::string> parse;
 	size_t pos = 0;
 	size_t next = rawRequest.find("\r\n");
 	size_t body_pos = rawRequest.find("\r\n\r\n");
@@ -60,8 +63,11 @@ void Request::parseRequest(const std::string& rawRequest, std::vector<std::strin
 		pos = next + 2;
 		next = rawRequest.find("\r\n", pos);
 	}
-	parse.push_back(rawRequest.substr(body_pos + 4, rawRequest.length() - (body_pos + 4)));
-	setParseVariables(rawRequest, parse);
+	if (body_pos == std::string::npos)
+    	parse.push_back("");
+	else
+    	parse.push_back(rawRequest.substr(body_pos + 4));
+	setParseVariables(parse);
 }
 
 std::string Request::getMethod() const { return method; }
@@ -71,13 +77,16 @@ std::string Request::getPath() const { return path; }
 std::string Request::getVersion() const { return version; }
 
 std::string Request::getHeader(const std::string& name) const {
-	
+	std::map<std::string, std::string>::const_iterator it = headers.find(name);
+	if (it != headers.end())
+		return it->second;
+	return "";
 }
 
 std::map<std::string, std::string> Request::getHeaders() const{
-	
+	return headers;
 }
 
 std::string Request::getBody() const {
-	
+	return body;
 }

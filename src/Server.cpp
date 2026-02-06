@@ -108,10 +108,19 @@ void Server::handleClientRead(int cfd, std::map<int, Client>::iterator it){
 			request.parseRequest(it->second.getReadBuffer());
 			
 			Response response;
-			if (request.getMethod() == "GET" && request.getPath() == "/")
-				it->second.appendWrite(response.buildResponse(200));
-			else
-				it->second.appendWrite(response.buildResponse(404));
+			std::string httpResponse;
+			
+			if (request.getMethod() == "GET") {
+				httpResponse = response.handleGet(request.getPath(), "config/www");
+			} else if (request.getMethod() == "POST") {
+				httpResponse = response.handlePost(request.getBody(), "config/uploads");
+			} else if (request.getMethod() == "DELETE") {
+				httpResponse = response.handleDelete(request.getPath(), "config/www");
+			} else {
+				httpResponse = response.errorResponse(400, "Method not allowed");
+			}
+			
+			it->second.appendWrite(httpResponse);
 			it->second.clearReadBuffer();
 		}
 	} else if (bytesRead == 0) {

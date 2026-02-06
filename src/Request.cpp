@@ -6,7 +6,7 @@
 /*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:41 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/06 14:55:56 by gabrsouz         ###   ########.fr       */
+/*   Updated: 2026/02/06 15:19:06 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 Request::Request() {}
 
 // Parse initial request line: METHOD SP PATH SP VERSION CRLF
-void Request::setParseVariables(const std::string& rawRequest, std::vector<std::string>& parse) {
+void Request::setParseVariables(const std::string& rawRequest, const std::vector<std::string> parse) {
 	method.clear();
 	path.clear();
 	version.clear();
@@ -46,8 +46,8 @@ void Request::setParseVariables(const std::string& rawRequest, std::vector<std::
 	body = parse.back();
 }
 
-void Request::parseRequest(const std::string& rawRequest, std::vector<std::string>& parse) {
-	parse.clear();
+void Request::parseRequest(const std::string& rawRequest) {
+	std::vector<std::string> parse;
 	size_t pos = 0;
 	size_t next = rawRequest.find("\r\n");
 	size_t body_pos = rawRequest.find("\r\n\r\n");

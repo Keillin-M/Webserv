@@ -6,13 +6,15 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/06 14:18:38 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/09 14:59:59 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/09 15:58:22 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/config/ServerConfig.hpp"
 
 ServerConfig::ServerConfig() {}
+
+int ServerConfig::getPort() const { return port; }
 
 std::string ServerConfig::getServerName() const { return serverName; }
 

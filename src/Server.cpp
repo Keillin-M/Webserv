@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:49 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/09 15:17:36 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/09 15:53:12 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,6 +126,13 @@ void Server::handleClientRead(int cfd, std::map<int, Client>::iterator it){
 			std::string uploadDir = rootDir + "/uploads";
 			if (matchedLocation == NULL) {
 				httpResponse = response.errorResponse(500, "Internal Server Error");
+				it->second.appendWrite(httpResponse);
+				it->second.clearReadBuffer();
+				return ;
+			}
+
+			if (!matchedLocation->isMethodAllowed(request.getMethod())) {
+				httpResponse = response.errorResponse(405,"Method Not Allowed");
 				it->second.appendWrite(httpResponse);
 				it->second.clearReadBuffer();
 				return ;

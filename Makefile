@@ -9,7 +9,10 @@ SRC = src/main.cpp \
 	src/Request.cpp \
 	src/Response.cpp \
 	src/ServerManager.cpp \
-	src/CGI.cpp
+	src/CGI.cpp \
+	src/config/ConfigParser.cpp \
+	src/config/LocationConfig.cpp \
+	src/config/ServerConfig.cpp \
 
 OBJ = $(SRC:src/%.cpp=obj/%.o)
 

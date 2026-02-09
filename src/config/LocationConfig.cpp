@@ -6,12 +6,11 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/06 14:18:49 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/09 17:09:36 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/09 18:14:20 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/config/LocationConfig.hpp"
-
 LocationConfig::LocationConfig() {}
 
 std::string LocationConfig::getPath() const { return path; }

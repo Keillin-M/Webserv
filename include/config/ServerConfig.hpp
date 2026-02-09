@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/06 14:19:06 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/09 16:55:26 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/09 18:17:19 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <stdexcept>
 #include "LocationConfig.hpp"
 
 class ServerConfig {

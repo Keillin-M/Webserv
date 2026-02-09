@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/06 14:18:38 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/09 15:58:22 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/09 18:17:10 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,4 +56,27 @@ const LocationConfig* ServerConfig::findMatchLocation(const std::string& request
 		}
 	}
 	return bestMatch;
+}
+
+void ServerConfig::validate() {
+	if (port == 0) 
+		port = 8080; // default
+	if (port < 1 || port > 65535)
+		throw std::runtime_error("Invalid port number");
+	if (root.empty())
+		root = "./www";
+
+	for (std::vector<LocationConfig>::iterator it = locations.begin();
+		it != locations.end();
+		++it) {
+			it->validate();
+		}
+		
+	if (locations.empty()) {
+		LocationConfig defaultLoc;
+		defaultLoc.setPath("/");
+		defaultLoc.setRoot(root);
+		defaultLoc.addAllowedMethods("GET");
+		locations.push_back(defaultLoc);
+	}
 }

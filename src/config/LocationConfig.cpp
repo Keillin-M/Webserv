@@ -6,12 +6,11 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/06 14:18:49 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/09 15:41:10 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/09 18:14:20 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/config/LocationConfig.hpp"
-
 LocationConfig::LocationConfig() {}
 
 std::string LocationConfig::getPath() const { return path; }
@@ -34,4 +33,14 @@ void LocationConfig::setIndexFile(const std::string& index) { indexFile = index;
 
 bool LocationConfig::isMethodAllowed(const std::string& method) const {
 	return std::find(allowedMethods.begin(), allowedMethods.end(), method) != allowedMethods.end();
+}
+
+void LocationConfig::validate() {
+	// Fallback to default
+	if (allowedMethods.empty())
+		allowedMethods.push_back("GET");
+	if (indexFile.empty())
+		indexFile = "index.html";
+	if (path.empty())
+		throw std::runtime_error("Location path cannot be empty");
 }

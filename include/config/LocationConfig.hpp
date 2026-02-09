@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/06 14:19:12 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/09 15:36:34 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/09 18:17:33 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <stdexcept>
 
 class LocationConfig {
 	private:
@@ -40,6 +41,7 @@ class LocationConfig {
 		void setIndexFile(const std::string& index);
 
 		bool isMethodAllowed(const std::string& method) const;
+		void validate();
 };
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/06 14:19:06 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/09 13:55:23 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/09 18:17:19 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <stdexcept>
 #include "LocationConfig.hpp"
 
 class ServerConfig {
@@ -44,6 +45,7 @@ class ServerConfig {
 		void addLocations(const LocationConfig& location);
 
 		const LocationConfig* findMatchLocation(const std::string& requestPath) const;
+		void validate();
 };
 
 #endif

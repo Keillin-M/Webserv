@@ -111,22 +111,27 @@ void Server::acceptNewClients() {
 void Server::handleClientRead(int cfd, std::map<int, Client>::iterator it){
 	char buf[4096];
 	ssize_t bytesRead = recv(cfd, buf, sizeof(buf), 0);
+	
 	if (bytesRead > 0) {
 		it->second.appendRead(buf, static_cast<size_t>(bytesRead));
-		if (it->second.requestCompleteCheck()) {
-			Request request;
-			request.parseRequest(it->second.getReadBuffer());
-			
-			Response response;
-			std::string httpResponse;
+	} else if (bytesRead == 0) {
+		close(cfd);
+		clients.erase(it);
+		return;
+	} if (it->second.requestCompleteCheck()) {
+		Request request;
+		request.parseRequest(it->second.getReadBuffer());
+		
+		Response response;
+		std::string httpResponse;
 
-			// Validate HTTP version - only accept HTTP/1.1
-			if (request.getVersion() != "HTTP/1.1") {
-				httpResponse = response.errorResponse(505, "HTTP Version Not Supported");
-				it->second.appendWrite(httpResponse);
-				it->second.clearReadBuffer();
-				return;
-			}
+		// Validate HTTP version - only accept HTTP/1.1
+		if (request.getVersion() != "HTTP/1.1") {
+			httpResponse = response.errorResponse(505, "HTTP Version Not Supported");
+			it->second.appendWrite(httpResponse);
+			it->second.clearReadBuffer();
+			return;
+		}
 			
 			const LocationConfig* matchedLocation = config->findMatchLocation(request.getPath());
 			
@@ -183,12 +188,6 @@ void Server::handleClientRead(int cfd, std::map<int, Client>::iterator it){
 			it->second.appendWrite(httpResponse);
 			it->second.clearReadBuffer();
 		}
-	} else if (bytesRead == 0) {
-		close(cfd);
-		clients.erase(it);
-	} else {
-		// < 0: non-blocking, no data available - skip for now
-	}
 }
 
 void Server::handleClientWrite(int cfd, std::map<int, Client>::iterator it) {

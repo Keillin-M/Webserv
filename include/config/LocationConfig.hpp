@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/06 14:19:12 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/09 14:48:14 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/09 15:36:34 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include <string>
 #include <vector>
+#include <algorithm>
 
 class LocationConfig {
 	private:

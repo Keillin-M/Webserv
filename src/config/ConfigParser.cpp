@@ -6,15 +6,21 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/05 13:17:35 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/06 16:41:12 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/09 15:58:22 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/config/ConfigParser.hpp"
 #include "../../include/config/ServerConfig.hpp"
 #include "../../include/config/LocationConfig.hpp"
+#include <cstdlib>
+#include <stdexcept>
 
 ConfigParser::ConfigParser() {}
+
+void ConfigParser::error(const std::string& msg) {
+	throw std::runtime_error(msg);
+}
 
 // Comment: skip
 void ConfigParser::skipComment(const std::string& content, size_t& i) {
@@ -97,13 +103,14 @@ ServerConfig ConfigParser::parseServer(const std::vector<std::string>& tokens, s
 	
 	while (i < tokens.size() && tokens[i] != "}") {
 		if (tokens[i] == "listen") {
-			config.setPort(std::stoi(tokens[++i]));
+			config.setPort(atoi(tokens[++i].c_str()));
 			++i; // skip ";"
 		} else if (tokens[i] == "root") { 
 			config.setRoot(tokens[++i]);
 			++i; //skip ";"
 		} else if (tokens[i] == "error_page") {
-			config.addErrorPages(std::stoi(tokens[++i]), tokens[++i]);
+		int errorCode = atoi(tokens[++i].c_str());
+		config.addErrorPages(errorCode, tokens[++i]);
 			i++;
 		} else if (tokens[i] == "location") {
 			LocationConfig location;

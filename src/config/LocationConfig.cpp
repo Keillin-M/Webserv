@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/06 14:18:49 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/09 15:05:01 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/09 15:41:10 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,5 +33,5 @@ void LocationConfig::setRoot(const std::string& s) { root = s; }
 void LocationConfig::setIndexFile(const std::string& index) { indexFile = index; }
 
 bool LocationConfig::isMethodAllowed(const std::string& method) const {
-	
+	return std::find(allowedMethods.begin(), allowedMethods.end(), method) != allowedMethods.end();
 }

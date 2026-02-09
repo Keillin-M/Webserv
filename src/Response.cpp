@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:41 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/06 17:25:57 by gabrsouz         ###   ########.fr       */
+/*   Updated: 2026/02/09 16:08:47 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,7 +119,7 @@ bool Response::isSafePath(const std::string& path) {
 	return true;
 }
 
-std::string Response::handleGet(const std::string& path, const std::string& rootDir) {
+std::string Response::handleGet(const std::string& path, const std::string& rootDir, const std::string& indexFile) {
 	// Security: check for directory traversal
 	if (!isSafePath(path))
 		return errorResponse(403, "Forbidden");
@@ -134,7 +134,7 @@ std::string Response::handleGet(const std::string& path, const std::string& root
 	if (!fileExists(full_path))
         return errorResponse(404, "Not Found");
     if (isDirectory(full_path)) {
-        full_path += "/index.html"; //turns the dir in file
+        full_path += "/" + indexFile;
         if (!fileExists(full_path))
             return errorResponse(404, "No index file");
     }

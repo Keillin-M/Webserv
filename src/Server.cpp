@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:49 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/09 15:53:12 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/09 16:08:47 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,9 +121,6 @@ void Server::handleClientRead(int cfd, std::map<int, Client>::iterator it){
 			Response response;
 			std::string httpResponse;
 			
-			// Use config if available, otherwise fallback to hardcoded
-			std::string rootDir = config ? config->getRoot() : "config/www";
-			std::string uploadDir = rootDir + "/uploads";
 			if (matchedLocation == NULL) {
 				httpResponse = response.errorResponse(500, "Internal Server Error");
 				it->second.appendWrite(httpResponse);
@@ -138,8 +135,22 @@ void Server::handleClientRead(int cfd, std::map<int, Client>::iterator it){
 				return ;
 			}
 			
+			// Resolve root: use location root, fallback to server root
+			std::string rootDir = matchedLocation->getRoot();
+			if (rootDir.empty()) {
+				rootDir = config->getRoot();
+			}
+			
+			// Get index file from location (or default)
+			std::string indexFile = matchedLocation->getIndexFile();
+			if (indexFile.empty()) {
+				indexFile = "index.html";
+			}
+			
+			std::string uploadDir = rootDir + "/uploads";
+			
 			if (request.getMethod() == "GET") {
-				httpResponse = response.handleGet(request.getPath(), rootDir);
+				httpResponse = response.handleGet(request.getPath(), rootDir, indexFile);
 			} else if (request.getMethod() == "POST") {
 				httpResponse = response.handlePost(request.getBody(), uploadDir);
 			} else if (request.getMethod() == "DELETE") {

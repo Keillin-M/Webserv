@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:49 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/09 16:08:47 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/09 16:39:37 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,27 +116,47 @@ void Server::handleClientRead(int cfd, std::map<int, Client>::iterator it){
 		if (it->second.requestCompleteCheck()) {
 			Request request;
 			request.parseRequest(it->second.getReadBuffer());
-			const LocationConfig* matchedLocation = config->findMatchLocation(request.getPath());
 			
 			Response response;
 			std::string httpResponse;
+
+			// Validate HTTP version - only accept HTTP/1.1
+			if (request.getVersion() != "HTTP/1.1") {
+				httpResponse = response.errorResponse(505, "HTTP Version Not Supported");
+				it->second.appendWrite(httpResponse);
+				it->second.clearReadBuffer();
+				return;
+			}
+			
+			const LocationConfig* matchedLocation = config->findMatchLocation(request.getPath());
 			
 			if (matchedLocation == NULL) {
-				httpResponse = response.errorResponse(500, "Internal Server Error");
+				std::string errorPagePath;
+				std::map<int, std::string> errorPages = config->getErrorPages();
+				if (errorPages.find(500) != errorPages.end()) {
+				errorPagePath = config->getRoot() + "/" + errorPages[500];
+				}
+				httpResponse = response.errorResponse(500, "Internal Server Error", errorPagePath);
 				it->second.appendWrite(httpResponse);
 				it->second.clearReadBuffer();
 				return ;
 			}
 
+			std::string rootDir = matchedLocation->getRoot();
+			
 			if (!matchedLocation->isMethodAllowed(request.getMethod())) {
-				httpResponse = response.errorResponse(405,"Method Not Allowed");
+				std::string errorPagePath;
+				std::map<int, std::string> errorPages = config->getErrorPages();
+				if (errorPages.find(405) != errorPages.end()) {
+					errorPagePath = rootDir + "/" + errorPages[405];
+				}
+				httpResponse = response.errorResponse(405,"Method Not Allowed", errorPagePath);
 				it->second.appendWrite(httpResponse);
 				it->second.clearReadBuffer();
 				return ;
 			}
 			
 			// Resolve root: use location root, fallback to server root
-			std::string rootDir = matchedLocation->getRoot();
 			if (rootDir.empty()) {
 				rootDir = config->getRoot();
 			}

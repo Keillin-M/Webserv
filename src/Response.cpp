@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:41 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/09 16:08:47 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/09 16:31:41 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,8 +25,16 @@ std::string Response::buildHttpResponse(){
         response += "HTTP/1.1 400 Bad Request\r\n";
     else if (status == 404)
         response += "HTTP/1.1 404 Not Found\r\n";
+	else if (status == 403)
+        response += "HTTP/1.1 403 Forbidden\r\n";
+    else if (status == 404)
+        response += "HTTP/1.1 404 Not Found\r\n";
+    else if (status == 405)
+        response += "HTTP/1.1 405 Method Not Allowed\r\n";
 	else if (status == 500)
         response += "HTTP/1.1 500 Internal Server Error\r\n";
+    else if (status == 505)
+        response += "HTTP/1.1 505 HTTP Version Not Supported\r\n";
     response += "Content-Type: " + headers["Content-Type"] + "\r\n";
     std::ostringstream oss;
     oss << body.size();
@@ -45,10 +53,10 @@ std::string Response::getContentType(const std::string& path) {
         return "text/html";
     if (path.find(".css") != std::string::npos)
         return "text/css";
-    if (path.find(".js") != std::string::npos)
-        return "application/javascript";
     if (path.find(".json") != std::string::npos)
         return "application/json";
+    if (path.find(".js") != std::string::npos)
+        return "application/javascript";
     if (path.find(".xml") != std::string::npos)
         return "application/xml";
     if (path.find(".txt") != std::string::npos)
@@ -180,10 +188,19 @@ std::string Response::handleDelete(const std::string& path, const std::string& r
 	return buildHttpResponse();
 }
 
-std::string Response::errorResponse(int statusCode, const std::string& message) {
+std::string Response::errorResponse(int statusCode, const std::string& message, const std::string& customErrorPage) {
 	status = statusCode;
-	body = message;
+    body = message;
+
+    // Try custom error page
+    if (!customErrorPage.empty() && fileExists(customErrorPage)) {
+        if (readFile(customErrorPage, body)) {
+            headers["Content-Type"] = getContentType(customErrorPage);
+            return buildHttpResponse();
+        }
+    }
+
+    // Fallback to generic error page
 	headers["Content-Type"] = "text/plain";
 	return buildHttpResponse();
 }
-

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tmarcos <tmarcos@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:49 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/06 15:18:16 by gabrsouz         ###   ########.fr       */
+/*   Updated: 2026/02/09 14:47:36 by tmarcos          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,11 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-Server::Server(int port) : listenFd(-1), port(port) {}
+// Construtor original (para compatibilidade)
+Server::Server(int port) : listenFd(-1), port(port), config(NULL) {}
+
+// Novo construtor para ServerManager (recebe config)
+Server::Server(int port, ServerConfig* cfg) : listenFd(-1), port(port), config(cfg) {}
 
 std::map<int, Client>& Server::getClients() {
 	return clients;
@@ -32,6 +36,14 @@ void Server::setListenFd(int newFd) {
 
 int Server::getListenFd() const {
 	return listenFd;
+}
+
+int Server::getPort() const {
+	return port;
+}
+
+ServerConfig* Server::getConfig() {
+	return config;
 }
 
 static void iniciateAddr(struct sockaddr_in& addr, int port) {

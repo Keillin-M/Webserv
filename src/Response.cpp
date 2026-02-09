@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:41 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/09 18:06:02 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/09 19:02:13 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,24 +17,38 @@ Response::Response() {}
 std::string Response::buildHttpResponse(){
 	std::string response;
     
-    if (status == 200)
-        response += "HTTP/1.1 200 OK\r\n";
-	else if (status == 201)
-        response += "HTTP/1.1 201 Created\r\n";
-	else if (status == 400)
-        response += "HTTP/1.1 400 Bad Request\r\n";
-	else if (status == 403)
-        response += "HTTP/1.1 403 Forbidden\r\n";
-    else if (status == 404)
-        response += "HTTP/1.1 404 Not Found\r\n";
-    else if (status == 405)
-        response += "HTTP/1.1 405 Method Not Allowed\r\n";
-	else if (status == 500)
-        response += "HTTP/1.1 500 Internal Server Error\r\n";
-    else if (status == 501)
-        response += "HTTP/1.1 501 Not Implemented\r\n";
-    else if (status == 505)
-        response += "HTTP/1.1 505 HTTP Version Not Supported\r\n";
+    switch (status) {
+        case 200:
+            response += "HTTP/1.1 200 OK\r\n";
+            break;
+        case 201:
+            response += "HTTP/1.1 201 Created\r\n";
+            break;
+        case 400:
+            response += "HTTP/1.1 400 Bad Request\r\n";
+            break;
+        case 403:
+            response += "HTTP/1.1 403 Forbidden\r\n";
+            break;
+        case 404:
+            response += "HTTP/1.1 404 Not Found\r\n";
+            break;
+        case 405:
+            response += "HTTP/1.1 405 Method Not Allowed\r\n";
+            break;
+        case 500:
+            response += "HTTP/1.1 500 Internal Server Error\r\n";
+            break;
+        case 501:
+            response += "HTTP/1.1 501 Not Implemented\r\n";
+            break;
+        case 505:
+            response += "HTTP/1.1 505 HTTP Version Not Supported\r\n";
+            break;
+        default:
+            response += "HTTP/1.1 500 Internal Server Error\r\n";
+            break;
+    }
     response += "Content-Type: " + headers["Content-Type"] + "\r\n";
     std::ostringstream oss;
     oss << body.size();

@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:26 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/09 16:08:47 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/09 16:20:52 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,10 +37,11 @@ class Response {
 	
 	public:
 		Response();
+
 		std::string handleGet(const std::string& path, const std::string& rootDir, const std::string& indexFile);
 		std::string handlePost(const std::string& requestBody, const std::string& uploadDir);
 		std::string handleDelete(const std::string& path, const std::string& rootDir);
-		std::string errorResponse(int statusCode, const std::string& message);
+		std::string errorResponse(int statusCode, const std::string& message, const std::string& customErrorPage = "");
 };
 
 #endif

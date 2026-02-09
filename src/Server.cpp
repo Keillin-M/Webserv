@@ -119,15 +119,19 @@ void Server::handleClientRead(int cfd, std::map<int, Client>::iterator it){
 			Response response;
 			std::string httpResponse;
 			
+			// Use config if available, otherwise fallback to hardcoded
+			std::string rootDir = config ? config->getRoot() : "config/www";
+			std::string uploadDir = rootDir + "/uploads";
+			
 			if (request.getMethod() == "GET") {
-				httpResponse = response.handleGet(request.getPath(), "config/www");
+				httpResponse = response.handleGet(request.getPath(), rootDir);
 			} else if (request.getMethod() == "POST") {
-				httpResponse = response.handlePost(request.getBody(), "config/uploads");
+				httpResponse = response.handlePost(request.getBody(), uploadDir);
 			} else if (request.getMethod() == "DELETE") {
 				// Check if path starts with /upload to determine directory
 				std::string path = request.getPath();
-				std::string rootDir = (path.find("upload") != std::string::npos) ? "config/uploads" : "config/www";
-				httpResponse = response.handleDelete(path, rootDir);
+				std::string deleteDir = (path.find("upload") != std::string::npos) ? uploadDir : rootDir;
+				httpResponse = response.handleDelete(path, deleteDir);
 			} else
 				httpResponse = response.errorResponse(400, "Method not allowed");
 			it->second.appendWrite(httpResponse);

@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/06 14:19:06 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/06 16:52:03 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/09 13:55:23 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,8 @@ class ServerConfig {
 		void setRoot(const std::string& s);
 		void addErrorPages(int status, const std::string& path);
 		void addLocations(const LocationConfig& location);
+
+		const LocationConfig* findMatchLocation(const std::string& requestPath) const;
 };
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:49 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/09 16:39:37 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/09 18:07:14 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,7 +179,7 @@ void Server::handleClientRead(int cfd, std::map<int, Client>::iterator it){
 				std::string deleteDir = (path.find("upload") != std::string::npos) ? uploadDir : rootDir;
 				httpResponse = response.handleDelete(path, deleteDir);
 			} else
-				httpResponse = response.errorResponse(400, "Method not allowed");
+				httpResponse = response.errorResponse(501, "Method not allowed");
 			it->second.appendWrite(httpResponse);
 			it->second.clearReadBuffer();
 		}

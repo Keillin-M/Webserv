@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:41 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/09 16:31:41 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/09 18:06:02 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,6 @@ std::string Response::buildHttpResponse(){
         response += "HTTP/1.1 201 Created\r\n";
 	else if (status == 400)
         response += "HTTP/1.1 400 Bad Request\r\n";
-    else if (status == 404)
-        response += "HTTP/1.1 404 Not Found\r\n";
 	else if (status == 403)
         response += "HTTP/1.1 403 Forbidden\r\n";
     else if (status == 404)
@@ -33,6 +31,8 @@ std::string Response::buildHttpResponse(){
         response += "HTTP/1.1 405 Method Not Allowed\r\n";
 	else if (status == 500)
         response += "HTTP/1.1 500 Internal Server Error\r\n";
+    else if (status == 501)
+        response += "HTTP/1.1 501 Not Implemented\r\n";
     else if (status == 505)
         response += "HTTP/1.1 505 HTTP Version Not Supported\r\n";
     response += "Content-Type: " + headers["Content-Type"] + "\r\n";

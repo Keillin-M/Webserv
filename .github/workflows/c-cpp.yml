@@ -1,85 +1,90 @@
 name: webserv-ci
 
+# This workflow runs automatically on every push and pull request.
+# Its goal is to ensure the project builds correctly and the server
+# can start and respond to a basic HTTP/1.1 request.
 on:
   push:
   pull_request:
 
 jobs:
   build-and-smoke-test:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-
-    runs-on: ${{ matrix.os }}
+    # Run only on Linux (simpler and more predictable for CI)
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      # Step 1: Clone the repository into the CI runner
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Show compiler version
-        run: |
-          c++ --version || true
-          g++ --version || true
-          clang++ --version || true
-
-      - name: Build (C++98 + warnings as errors)
+      # Step 2: Compile the project using C++98 and 42-required flags
+      # -Werror ensures warnings fail the build
+      # -std=c++98 enforces subject compliance
+      - name: Build webserv (C++98)
         run: |
           make fclean || true
           make CXXFLAGS="-Wall -Wextra -Werror -std=c++98"
 
-      # Smoke test: start server + curl
-      # Adjust CONFIG path and PORT to match your repo/config
-      - name: Smoke test (start server + curl)
+      # Step 3: Smoke test
+      # Start the server, wait for it to listen on the port,
+      # then send a basic HTTP/1.1 request using curl.
+      - name: Smoke test (HTTP/1.1)
         run: |
           set -e
 
+          # Path to the configuration file used for CI
           CONFIG="config/default.conf"
+
+          # Port defined inside the config file
           PORT="8080"
 
+          # Ensure the config file exists
           if [ ! -f "$CONFIG" ]; then
-            echo "Config not found: $CONFIG"
-            echo "Fix the path in .github/workflows/webserv_ci.yml"
+            echo "Config file not found: $CONFIG"
             exit 1
           fi
 
-          echo "Starting webserv with $CONFIG ..."
-          ./webserv "$CONFIG" > server.log 2>&1 &
+          echo "Starting webserv..."
+          ./webserv "$CONFIG" > webserv.log 2>&1 &
           SERVER_PID=$!
 
-          # Wait a bit for server to bind/listen
+          # Give the server some time to bind and listen
+          # We retry several times to avoid race conditions
           for i in 1 2 3 4 5 6 7 8 9 10; do
-            if curl -sS "http://127.0.0.1:${PORT}/" -o /dev/null; then
+            if curl -sS --http1.1 "http://127.0.0.1:${PORT}/" -o /dev/null; then
               echo "Server responded on attempt $i"
               break
             fi
             sleep 0.5
           done
 
-          # Real check (status code)
-          STATUS="$(curl -sS -o /dev/null -w "%{http_code}" "http://127.0.0.1:${PORT}/")"
-          echo "HTTP status: $STATUS"
+          # Perform a real HTTP request and capture the status code
+          STATUS="$(curl -sS --http1.1 -o /dev/null -w "%{http_code}" "http://127.0.0.1:${PORT}/")"
+          echo "HTTP status returned by webserv: $STATUS"
 
-          # Expect something valid (200/301/302/403/404 are all 'server is alive')
+          # Accept common valid HTTP responses
+          # (server is alive even if the route does not exist)
           case "$STATUS" in
             200|301|302|403|404) ;;
             *)
-              echo "Unexpected status: $STATUS"
-              echo "---- server.log ----"
-              cat server.log || true
+              echo "Unexpected HTTP status: $STATUS"
+              echo "---- webserv.log ----"
+              cat webserv.log || true
               kill "$SERVER_PID" || true
               wait "$SERVER_PID" || true
               exit 1
               ;;
           esac
 
-          echo "Stopping server (pid=$SERVER_PID)"
+          # Stop the server cleanly
           kill "$SERVER_PID" || true
           wait "$SERVER_PID" || true
 
-      - name: Upload server log if failure
+      # Step 4: Upload logs if something goes wrong
+      # This helps debugging CI failures without rerunning locally
+      - name: Upload logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: server-log-${{ matrix.os }}
-          path: server.log
+          name: webserv-log
+          path: webserv.log

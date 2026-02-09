@@ -1,0 +1,85 @@
+name: webserv-ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-smoke-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Show compiler version
+        run: |
+          c++ --version || true
+          g++ --version || true
+          clang++ --version || true
+
+      - name: Build (C++98 + warnings as errors)
+        run: |
+          make fclean || true
+          make CXXFLAGS="-Wall -Wextra -Werror -std=c++98"
+
+      # Smoke test: start server + curl
+      # Adjust CONFIG path and PORT to match your repo/config
+      - name: Smoke test (start server + curl)
+        run: |
+          set -e
+
+          CONFIG="config/default.conf"
+          PORT="8080"
+
+          if [ ! -f "$CONFIG" ]; then
+            echo "Config not found: $CONFIG"
+            echo "Fix the path in .github/workflows/webserv_ci.yml"
+            exit 1
+          fi
+
+          echo "Starting webserv with $CONFIG ..."
+          ./webserv "$CONFIG" > server.log 2>&1 &
+          SERVER_PID=$!
+
+          # Wait a bit for server to bind/listen
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            if curl -sS "http://127.0.0.1:${PORT}/" -o /dev/null; then
+              echo "Server responded on attempt $i"
+              break
+            fi
+            sleep 0.5
+          done
+
+          # Real check (status code)
+          STATUS="$(curl -sS -o /dev/null -w "%{http_code}" "http://127.0.0.1:${PORT}/")"
+          echo "HTTP status: $STATUS"
+
+          # Expect something valid (200/301/302/403/404 are all 'server is alive')
+          case "$STATUS" in
+            200|301|302|403|404) ;;
+            *)
+              echo "Unexpected status: $STATUS"
+              echo "---- server.log ----"
+              cat server.log || true
+              kill "$SERVER_PID" || true
+              wait "$SERVER_PID" || true
+              exit 1
+              ;;
+          esac
+
+          echo "Stopping server (pid=$SERVER_PID)"
+          kill "$SERVER_PID" || true
+          wait "$SERVER_PID" || true
+
+      - name: Upload server log if failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-log-${{ matrix.os }}
+          path: server.log

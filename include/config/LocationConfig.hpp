@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/06 14:19:12 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/09 15:36:34 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/09 17:05:43 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ class LocationConfig {
 		void setIndexFile(const std::string& index);
 
 		bool isMethodAllowed(const std::string& method) const;
+		void validate();
 };
 
 #endif

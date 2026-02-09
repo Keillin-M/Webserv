@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/05 13:17:35 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/09 15:58:22 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/09 17:19:49 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,6 +120,16 @@ ServerConfig ConfigParser::parseServer(const std::vector<std::string>& tokens, s
 				if (tokens[i] == "root") {
 					location.setRoot(tokens[++i]);
 					++i; //skip ";"
+				} else if (tokens[i] == "allowed_methods") {
+					++i;
+					while (i < tokens.size() && tokens[i] != ";") {
+						location.addAllowedMethods(tokens[i]);
+						++i;
+					}
+					++i; // skip ";"
+				} else if (tokens[i] == "index") {
+					location.setIndexFile(tokens[++i]);
+					++i; // skip ";"
 				} else
 					++i; // skip unknown token
 			}
@@ -129,6 +139,7 @@ ServerConfig ConfigParser::parseServer(const std::vector<std::string>& tokens, s
 			++i;
 	}
 	++i;
+	config.validate();
 	return config;
 }
 

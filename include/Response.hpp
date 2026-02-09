@@ -30,7 +30,7 @@ class Response {
 		
 		std::string buildHttpResponse();
 		std::string getContentType(const std::string& path);
-		std::string readFile(const std::string& filepath);
+		bool readFile(const std::string& filepath, std::string& contentFile);
 		bool fileExists(const std::string& filepath);
 		bool isDirectory(const std::string& path);
 	
@@ -40,7 +40,6 @@ class Response {
 		std::string handlePost(const std::string& requestBody, const std::string& uploadDir);
 		std::string handleDelete(const std::string& path, const std::string& rootDir);
 		std::string errorResponse(int statusCode, const std::string& message);
-		std::string buildResponse(int statusCode);
 };
 
 #endif

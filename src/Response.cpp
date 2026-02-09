@@ -14,41 +14,6 @@
 
 Response::Response() {}
 
-std::string Response::buildResponse(int statusCode) {
-	std::string body;
-	std::string statusText;
-	(void)status;
-	
-	if (statusCode == 200) {
-		statusText = "OK";
-		body = "Hello, world!";
-	} else if (statusCode == 404) {
-		statusText = "Not Found";
-		body = "404 Not found";
-	} else {
-		statusText = "Internal Server Error";
-		body = "500 Internal Server Error";
-	}
-	
-	std::ostringstream oss;
-	oss << statusCode;
-	std::string statusCodeStr = oss.str();
-	
-	std::ostringstream oss2;
-	oss2 << body.size();
-	std::string contentLength = oss2.str();
-	
-	std::string response;
-	response += "HTTP/1.1 " + statusCodeStr + " " + statusText + "\r\n";
-	response += "Content-Type: text/plain\r\n";
-	response += "Content-Length: " + contentLength + "\r\n";
-	response += "\r\n"; //End of header
-	response += body;
-	
-	return response;
-}
-
-
 std::string Response::buildHttpResponse(){
 	std::string response;
     
@@ -94,18 +59,14 @@ std::string Response::getContentType(const std::string& path) {
     return "application/octet-stream"; //default
 }
 
-std::string Response::readFile(const std::string& filepath) {
-	std::ifstream file(filepath.c_str());
+bool Response::readFile(const std::string& filepath, std::string& contentFile) {
+	std::ifstream file(filepath.c_str(), std::ios::in | std::ios::binary);
 	if (!file.is_open())
-		return "";
-	
-	std::string content;
-	std::string line;
-	while (std::getline(file, line)) {
-		content += line + "\n";
-	}
-	file.close();
-	return content;
+		return false;
+	std::ostringstream ss;
+    ss << file.rdbuf(); // read entire file into stringstream
+    contentFile = ss.str();
+	return true;
 }
 
 bool Response::fileExists(const std::string& filepath) {
@@ -135,8 +96,7 @@ std::string Response::handleGet(const std::string& path, const std::string& root
         if (!fileExists(full_path))
             return errorResponse(404, "No index file");
     }
-	body = readFile(full_path);
-    if (body.empty())
+    if (!readFile(full_path, body))
         return errorResponse(500, "Failed to read file");
     status = 200;
     headers["Content-Type"] = getContentType(full_path);
@@ -146,13 +106,14 @@ std::string Response::handleGet(const std::string& path, const std::string& root
 std::string Response::handlePost(const std::string& requestBody, const std::string& uploadDir) {
 	if (requestBody.empty())
         return errorResponse(400, "Bad Request - Empty body");
+	mkdir(uploadDir.c_str(), 0755); // Ensure upload directory exists
 	std::ostringstream oss;
     oss << uploadDir << "/upload_" << time(NULL) << ".txt";
     std::string filepath = oss.str();
-	std::ofstream file(filepath.c_str());
+	std::ofstream file(filepath.c_str(), std::ios::out | std::ios::binary);
     if (!file.is_open())
         return errorResponse(500, "Failed to create file");
-    file << requestBody;
+    file.write(requestBody.data(), requestBody.size());
     file.close();
     status = 201;  // Created
     body = "Upload successful";

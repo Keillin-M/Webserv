@@ -100,13 +100,10 @@ void Server::handleClientRead(int cfd, std::map<int, Client>::iterator it){
 	char buf[4096];
 	ssize_t bytesRead = recv(cfd, buf, sizeof(buf), 0);
 	if (bytesRead > 0) {
-		// store in client's read buffer
 		it->second.appendRead(buf, static_cast<size_t>(bytesRead));
-		// TODO: parse HTTP request from it->second.read_buffer() and prepare response
 		if (it->second.requestCompleteCheck()) {
 			Request request;
 			request.parseRequest(it->second.getReadBuffer());
-			
 			Response response;
 			std::string httpResponse;
 			
@@ -115,16 +112,16 @@ void Server::handleClientRead(int cfd, std::map<int, Client>::iterator it){
 			} else if (request.getMethod() == "POST") {
 				httpResponse = response.handlePost(request.getBody(), "config/uploads");
 			} else if (request.getMethod() == "DELETE") {
-				httpResponse = response.handleDelete(request.getPath(), "config/www");
-			} else {
+				// Check if path starts with /upload to determine directory
+				std::string path = request.getPath();
+				std::string rootDir = (path.find("upload") != std::string::npos) ? "config/uploads" : "config/www";
+				httpResponse = response.handleDelete(path, rootDir);
+			} else
 				httpResponse = response.errorResponse(400, "Method not allowed");
-			}
-			
 			it->second.appendWrite(httpResponse);
 			it->second.clearReadBuffer();
 		}
 	} else if (bytesRead == 0) {
-		// peer closed connection
 		close(cfd);
 		clients.erase(it);
 	} else {

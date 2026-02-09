@@ -33,6 +33,7 @@ class Response {
 		bool readFile(const std::string& filepath, std::string& contentFile);
 		bool fileExists(const std::string& filepath);
 		bool isDirectory(const std::string& path);
+		bool isSafePath(const std::string& path);
 	
 	public:
 		Response();

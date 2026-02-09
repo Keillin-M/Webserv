@@ -38,6 +38,7 @@ std::string Response::buildHttpResponse(){
 }
 
 std::string Response::getContentType(const std::string& path) {
+	// Text types
 	if (path.find(".html") != std::string::npos)
         return "text/html";
     if (path.find(".htm") != std::string::npos)
@@ -48,14 +49,41 @@ std::string Response::getContentType(const std::string& path) {
         return "application/javascript";
     if (path.find(".json") != std::string::npos)
         return "application/json";
+    if (path.find(".xml") != std::string::npos)
+        return "application/xml";
+    if (path.find(".txt") != std::string::npos)
+        return "text/plain";
+    
+    // Images
     if (path.find(".jpg") != std::string::npos || path.find(".jpeg") != std::string::npos)
         return "image/jpeg";
     if (path.find(".png") != std::string::npos)
         return "image/png";
     if (path.find(".gif") != std::string::npos)
         return "image/gif";
-    if (path.find(".txt") != std::string::npos)
-        return "text/plain";
+    if (path.find(".svg") != std::string::npos)
+        return "image/svg+xml";
+    if (path.find(".ico") != std::string::npos)
+        return "image/x-icon";
+    if (path.find(".webp") != std::string::npos)
+        return "image/webp";
+    
+    // Fonts
+    if (path.find(".woff") != std::string::npos)
+        return "font/woff";
+    if (path.find(".woff2") != std::string::npos)
+        return "font/woff2";
+    if (path.find(".ttf") != std::string::npos)
+        return "font/ttf";
+    if (path.find(".otf") != std::string::npos)
+        return "font/otf";
+    
+    // Documents
+    if (path.find(".pdf") != std::string::npos)
+        return "application/pdf";
+    if (path.find(".zip") != std::string::npos)
+        return "application/zip";
+    
     return "application/octet-stream"; //default
 }
 
@@ -81,7 +109,21 @@ bool Response::isDirectory(const std::string& path) {
 	return S_ISDIR(buffer.st_mode);
 }
 
+bool Response::isSafePath(const std::string& path) {
+	// Reject paths containing ".."
+	if (path.find("..") != std::string::npos)
+		return false;
+	// Reject absolute paths (must be relative)
+	if (!path.empty() && path[0] != '/')
+		return false;
+	return true;
+}
+
 std::string Response::handleGet(const std::string& path, const std::string& rootDir) {
+	// Security: check for directory traversal
+	if (!isSafePath(path))
+		return errorResponse(403, "Forbidden");
+	
 	std::string full_path = rootDir;
 	if (!full_path.empty() && full_path[full_path.size() - 1] != '/')
 		full_path += '/';
@@ -122,6 +164,9 @@ std::string Response::handlePost(const std::string& requestBody, const std::stri
 }
 
 std::string Response::handleDelete(const std::string& path, const std::string& rootDir) {
+	// Security: check for directory traversal
+	if (!isSafePath(path))
+		return errorResponse(403, "Forbidden");
 	std::string full_path = rootDir + path;
     if (!fileExists(full_path))
         return errorResponse(404, "File not found");

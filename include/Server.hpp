@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: tmarcos <tmarcos@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:56:57 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/05 15:46:59 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/09 14:47:36 by tmarcos          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,14 +19,22 @@
 #include <poll.h>
 #include <sys/socket.h>
 #include <map>
+#include <set>
 #include "Client.hpp"
+#include "config/ServerConfig.hpp"
 
 class Server {
 	private:
-		int listenFd; //listens the socket fd
+		int listenFd;
 		int port;
 		std::map<int, Client> clients;
+		ServerConfig* config;
 
+	public:
+		Server(int port);
+		Server(int port, ServerConfig* cfg);
+		
+		void run();
 		void setupListenSocket();
 		void createPollFds(std::vector<struct pollfd>& pollFds, struct pollfd pfd);
 		void acceptNewClients();
@@ -34,14 +42,31 @@ class Server {
 		void handleClientWrite(int cfd, std::map<int, Client>::iterator it);
 		void closeIfComplete(int cfd, std::map<int, Client>::iterator it);
 
-	public:
-		Server(int port);
-		void run();
-
 		std::map<int, Client>& getClients();
 		void setListenFd(int newFd);
 		int getListenFd() const;
+		int getPort() const;
+		ServerConfig* getConfig();
+};
+
+class ServerManager {
+	private:
+		std::vector<Server*> servers;
+		std::map<int, Server*> listenFdToServer;
+		std::map<int, Server*> clientFdToServer;
 		
+		void buildPollArray(std::vector<struct pollfd>& fds);
+		void handleListenSocket(int fd);
+		void handleClientSocket(int fd, short revents);
+		void validatePorts(std::vector<ServerConfig>& configs);
+		void updateClientMapping(Server* server);
+		
+	public:
+		ServerManager();
+		~ServerManager();
+		
+		void initialize(std::vector<ServerConfig>& configs);
+		void run();
 };
 
 #endif

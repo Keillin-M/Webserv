@@ -33,8 +33,18 @@ void Server::setupListenSocket() {
 	setsockopt(listenFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 	
 	iniciateAddr(addr, port);
-	bind(listenFd, (struct sockaddr *)&addr, sizeof(addr));
-	listen(listenFd, SOMAXCONN);
+	if (bind(listenFd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+		std::cerr << "bind error on port " << port << ": " << strerror(errno) << std::endl;
+		close(listenFd);
+		listenFd = -1;
+		return;
+	}
+	if (listen(listenFd, SOMAXCONN) < 0) {
+		std::cerr << "listen error on port " << port << ": " << strerror(errno) << std::endl;
+		close(listenFd);
+		listenFd = -1;
+		return;
+	}
 
 	// (subject) "non-blocking at all times"
 	int flags = fcntl(listenFd, F_GETFL, 0);
@@ -46,12 +56,17 @@ void Server::createPollFds(std::vector<struct pollfd>& pollFds, struct pollfd pf
 	pfd.events = POLLIN;
 	pfd.revents = 0;
 	pollFds.push_back(pfd);
-	// add each client fd from the map
+	// add each client fd — state-aware event registration
 	std::map<int, Client>::const_iterator it;
 	for (it = clients.begin(); it != clients.end(); ++it) {
 		pfd.fd = it->first;
-		// request read events, and ask for POLLOUT only if there's pending data
-		pfd.events = POLLIN | (it->second.hasWrite() ? POLLOUT : 0);
+		short events = 0;
+		ClientState st = it->second.getState();
+		if (st == READING || st == IDLE || st == ACCEPTED)
+			events |= POLLIN;
+		if (st == WRITING || it->second.hasWrite())
+			events |= POLLOUT;
+		pfd.events = events;
 		pfd.revents = 0;
 		pollFds.push_back(pfd);
 	}
@@ -70,6 +85,7 @@ void Server::acceptNewClients() {
 		int clientFlags = fcntl(clientFd, F_GETFL, 0);
 		fcntl(clientFd, F_SETFL, clientFlags | O_NONBLOCK);
 		clients.insert(std::make_pair(clientFd, Client(clientFd)));
+		clients.find(clientFd)->second.setState(READING);
 		std::cout << "[Server] Client connected: fd=" << clientFd << std::endl;
 	}
 }

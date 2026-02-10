@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/05 13:17:35 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/09 17:19:49 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/10 14:58:21 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,9 +79,9 @@ std::vector<std::string> ConfigParser::tokenize(const std::string& content) {
 		} if (quote) { // Everything inside quote is added as 1 token
 			token += c;
 			continue;
-		} if (std::isspace(c)) {
+		} else if (std::isspace(c)) {
 			handleWhitespace(token, tokens);
-		} if (c == '{' || c == '}' || c == ';') {
+		} else if (c == '{' || c == '}' || c == ';') {
 			handleSpecialChar(c, token, tokens);
 		} else
 			token += c;
@@ -91,34 +91,53 @@ std::vector<std::string> ConfigParser::tokenize(const std::string& content) {
 	return tokens;
 }
 
-void error(const std::string& msg) {
-	std::cerr << "ConfigParser error: " << msg << std::endl;
-	exit(EXIT_FAILURE);
-}
-
-
 ServerConfig ConfigParser::parseServer(const std::vector<std::string>& tokens, size_t& i) {
 	ServerConfig config;
-	i += 2;  // skip "server" and "{"
+	 if (i + 1 >= tokens.size())
+        error("Invalid server block: missing opening brace");
+    ++i; // skip "server"
+    if (tokens[i] != "{")
+        error("Expected '{' after 'server'");
+    ++i; // skip "{"
 	
 	while (i < tokens.size() && tokens[i] != "}") {
 		if (tokens[i] == "listen") {
+			if (i + 1 >= tokens.size())
+				error("Missing port value after 'listen'");
 			config.setPort(atoi(tokens[++i].c_str()));
+			if (i + 1 >= tokens.size() || tokens[i + 1] != ";")
+				error("Missing ';' after port number");
 			++i; // skip ";"
-		} else if (tokens[i] == "root") { 
+		} else if (tokens[i] == "root") {
+			if (i + 1 >= tokens.size())
+				error("Missing root path after 'root'");
 			config.setRoot(tokens[++i]);
+			if (i + 1 >= tokens.size() || tokens[i + 1] != ";")
+				error("Missing ';' after root path");
 			++i; //skip ";"
 		} else if (tokens[i] == "error_page") {
-		int errorCode = atoi(tokens[++i].c_str());
-		config.addErrorPages(errorCode, tokens[++i]);
+			if (i + 2 >= tokens.size()) // Need 2 more tokens (code + path)
+				error("Missing error code or path after 'error_page'");
+			int errorCode = atoi(tokens[++i].c_str());
+			config.addErrorPages(errorCode, tokens[++i]);
+			if (i + 1 >= tokens.size() || tokens[i + 1] != ";")
+				error("Missing ';' after error_page");
 			i++;
 		} else if (tokens[i] == "location") {
+			if (i + 2 >= tokens.size())
+				error("Invalid location block syntax");
 			LocationConfig location;
 			location.setPath(tokens[++i]);
+			if (tokens[i] != "{")
+				error("Expected '{' after location path");
 			++i; // skip "{"
-			while (tokens[i] != "}") {
+			while (i < tokens.size() && tokens[i] != "}") {
 				if (tokens[i] == "root") {
+					if (i + 1 >= tokens.size())
+						error("Missing root path after 'root' in location");
 					location.setRoot(tokens[++i]);
+					if (i + 1 >= tokens.size() || tokens[i + 1] != ";")
+						error("Missing ';' after root path in location");
 					++i; //skip ";"
 				} else if (tokens[i] == "allowed_methods") {
 					++i;
@@ -128,11 +147,17 @@ ServerConfig ConfigParser::parseServer(const std::vector<std::string>& tokens, s
 					}
 					++i; // skip ";"
 				} else if (tokens[i] == "index") {
+					if (i + 1 >= tokens.size())
+						error("Missing index file after 'index' in location");
 					location.setIndexFile(tokens[++i]);
+					if (i + 1 >= tokens.size() || tokens[i + 1] != ";")
+						error("Missing ';' after index file in location");
 					++i; // skip ";"
 				} else
 					++i; // skip unknown token
 			}
+			if (i >= tokens.size())
+				error("Missing '}' for location block");
 			++i; //skip "}"
 			config.addLocations(location);
 		} else

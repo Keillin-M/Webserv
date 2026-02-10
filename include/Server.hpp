@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:56:57 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/10 15:26:07 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/10 15:28:29 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ class Server {
 		void handleClientRead(int cfd, std::map<int, Client>::iterator it);
 		int readClient(int cfd, std::map<int, Client>::iterator &it);
 
-		void handleUnallowedMethod(Response &response, std::map<int, Client>::iterator &it, std::string rootDir);
+	void handleUnallowedMethod(Response &response, std::map<int, Client>::iterator &it);
 		void handleMethod(Request &request, Response &response, const LocationConfig* matchedLocation, std::map<int, Client>::iterator &it);
 		void handleClientWrite(int cfd, std::map<int, Client>::iterator it);
 		void closeIfComplete(int cfd, std::map<int, Client>::iterator it);

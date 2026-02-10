@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/10 11:25:08 by gabrsouz          #+#    #+#             */
-/*   Updated: 2026/02/10 15:26:07 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/10 15:28:23 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ int Server::readClient(int cfd, std::map<int, Client>::iterator &it) {
 }
 
 // Generate 405 Method Not Allowed response when HTTP method is disallowed
-void Server::handleUnallowedMethod(Response &response, std::map<int, Client>::iterator &it, std::string rootDir) {
+void Server::handleUnallowedMethod(Response &response, std::map<int, Client>::iterator &it) {
 	response.setErrorPages(config->getErrorPages(), config->getRoot());
 	it->second.appendWrite(response.errorResponse(405, "Method Not Allowed"));
 	it->second.clearReadBuffer();
@@ -98,7 +98,7 @@ void Server::handleClientRead(int cfd, std::map<int, Client>::iterator it) {
 		if (rootDir.empty()) 
 			rootDir = config->getRoot();
 		if (!matchedLocation->isMethodAllowed(request.getMethod())) {
-			handleUnallowedMethod(response, it, rootDir);
+			handleUnallowedMethod(response, it);
 			return;
 		}
 		handleMethod(request, response, matchedLocation, it);

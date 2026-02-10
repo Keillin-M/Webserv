@@ -85,7 +85,7 @@ void Server::acceptNewClients() {
 			clients.find(clientFd)->second.setState(READING);
 			std::cout << "[Server] Client connected: fd=" << clientFd << std::endl;
 		} else
-			break;  // No more connections waiting
+			break;  // No more pending connections (EAGAIN on non-blocking socket)
 	}
 }
 

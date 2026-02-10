@@ -177,6 +177,20 @@ void ServerManager::run() {
 				continue;  // No events on this socket
 			int fd = pollFds[i].fd;
 			short revents = pollFds[i].revents;
+			// Handle socket errors first (disconnection, errors)
+			if (revents & (POLLERR | POLLHUP | POLLNVAL)) {
+				if (clientFdToServer.find(fd) != clientFdToServer.end()) {
+					Server* server = clientFdToServer[fd];
+					std::map<int, Client>& clients = server->getClients();
+					std::map<int, Client>::iterator it = clients.find(fd);
+					if (it != clients.end()) {
+						close(fd);
+						clients.erase(it);
+					}
+					clientFdToServer.erase(fd);
+				}
+				continue;
+			}
 			// Check if this is a listening socket (new connection)
 			if (listenFdToServer.find(fd) != listenFdToServer.end()) {
 				if (revents & POLLIN)

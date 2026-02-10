@@ -27,10 +27,18 @@ void Server::emptyMatchLocation(Response &response, std::map<int, Client>::itera
 int Server::readClient(int cfd, std::map<int, Client>::iterator &it) {
 	char buf[4096];
 	ssize_t bytesRead = recv(cfd, buf, sizeof(buf), 0);
-	
+
 	if (bytesRead > 0) {
 		it->second.appendRead(buf, static_cast<size_t>(bytesRead));
 	} else if (bytesRead == 0) {
+		// Peer closed connection (FIN received)
+		it->second.setState(CLOSING);
+		close(cfd);
+		clients.erase(it);
+		return 1;
+	} else {
+		// bytesRead < 0: error — close client (no errno check per subject)
+		it->second.setState(CLOSING);
 		close(cfd);
 		clients.erase(it);
 		return 1;
@@ -74,6 +82,7 @@ void Server::handleClientRead(int cfd, std::map<int, Client>::iterator it) {
 	if (readClient(cfd, it))
 		return;
 	if (it->second.requestCompleteCheck()) {
+		it->second.setState(WRITING);
 		Request request;
 		Response response;
 		request.parseRequest(it->second.getReadBuffer());

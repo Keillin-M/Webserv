@@ -38,7 +38,6 @@ class Server {
 		ServerConfig* config;
 
 	public:
-		Server(int port);
 		Server(int port, ServerConfig* cfg);
 		
 		void run();

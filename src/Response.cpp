@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:41 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/09 19:02:13 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/10 14:49:36 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -196,7 +196,7 @@ std::string Response::handleDelete(const std::string& path, const std::string& r
         return errorResponse(400, "Cannot delete directory");
     if (remove(full_path.c_str()) != 0)
         return errorResponse(500, "Failed to delete");
-    status = 200;  // ou 204 No Content
+    status = 200;
     body = "File deleted successfully";
     headers["Content-Type"] = "text/plain";
 	return buildHttpResponse();
@@ -205,7 +205,6 @@ std::string Response::handleDelete(const std::string& path, const std::string& r
 std::string Response::errorResponse(int statusCode, const std::string& message, const std::string& customErrorPage) {
 	status = statusCode;
     body = message;
-
     // Try custom error page
     if (!customErrorPage.empty() && fileExists(customErrorPage)) {
         if (readFile(customErrorPage, body)) {
@@ -213,7 +212,6 @@ std::string Response::errorResponse(int statusCode, const std::string& message, 
             return buildHttpResponse();
         }
     }
-
     // Fallback to generic error page
 	headers["Content-Type"] = "text/plain";
 	return buildHttpResponse();

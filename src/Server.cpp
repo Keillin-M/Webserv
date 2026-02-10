@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:49 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/09 18:07:14 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/10 11:26:48 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,88 +106,6 @@ void Server::acceptNewClients() {
 		clients.insert(std::make_pair(clientFd, Client(clientFd)));
 		std::cout << "[Server] Client connected: fd=" << clientFd << std::endl;
 	}
-}
-
-void Server::handleClientRead(int cfd, std::map<int, Client>::iterator it){
-	char buf[4096];
-	ssize_t bytesRead = recv(cfd, buf, sizeof(buf), 0);
-	
-	if (bytesRead > 0) {
-		it->second.appendRead(buf, static_cast<size_t>(bytesRead));
-	} else if (bytesRead == 0) {
-		close(cfd);
-		clients.erase(it);
-		return;
-	} if (it->second.requestCompleteCheck()) {
-		Request request;
-		request.parseRequest(it->second.getReadBuffer());
-		
-		Response response;
-		std::string httpResponse;
-
-		// Validate HTTP version - only accept HTTP/1.1
-		if (request.getVersion() != "HTTP/1.1") {
-			httpResponse = response.errorResponse(505, "HTTP Version Not Supported");
-			it->second.appendWrite(httpResponse);
-			it->second.clearReadBuffer();
-			return;
-		}
-			
-			const LocationConfig* matchedLocation = config->findMatchLocation(request.getPath());
-			
-			if (matchedLocation == NULL) {
-				std::string errorPagePath;
-				std::map<int, std::string> errorPages = config->getErrorPages();
-				if (errorPages.find(500) != errorPages.end()) {
-				errorPagePath = config->getRoot() + "/" + errorPages[500];
-				}
-				httpResponse = response.errorResponse(500, "Internal Server Error", errorPagePath);
-				it->second.appendWrite(httpResponse);
-				it->second.clearReadBuffer();
-				return ;
-			}
-
-			std::string rootDir = matchedLocation->getRoot();
-			
-			if (!matchedLocation->isMethodAllowed(request.getMethod())) {
-				std::string errorPagePath;
-				std::map<int, std::string> errorPages = config->getErrorPages();
-				if (errorPages.find(405) != errorPages.end()) {
-					errorPagePath = rootDir + "/" + errorPages[405];
-				}
-				httpResponse = response.errorResponse(405,"Method Not Allowed", errorPagePath);
-				it->second.appendWrite(httpResponse);
-				it->second.clearReadBuffer();
-				return ;
-			}
-			
-			// Resolve root: use location root, fallback to server root
-			if (rootDir.empty()) {
-				rootDir = config->getRoot();
-			}
-			
-			// Get index file from location (or default)
-			std::string indexFile = matchedLocation->getIndexFile();
-			if (indexFile.empty()) {
-				indexFile = "index.html";
-			}
-			
-			std::string uploadDir = rootDir + "/uploads";
-			
-			if (request.getMethod() == "GET") {
-				httpResponse = response.handleGet(request.getPath(), rootDir, indexFile);
-			} else if (request.getMethod() == "POST") {
-				httpResponse = response.handlePost(request.getBody(), uploadDir);
-			} else if (request.getMethod() == "DELETE") {
-				// Check if path starts with /upload to determine directory
-				std::string path = request.getPath();
-				std::string deleteDir = (path.find("upload") != std::string::npos) ? uploadDir : rootDir;
-				httpResponse = response.handleDelete(path, deleteDir);
-			} else
-				httpResponse = response.errorResponse(501, "Method not allowed");
-			it->second.appendWrite(httpResponse);
-			it->second.clearReadBuffer();
-		}
 }
 
 void Server::handleClientWrite(int cfd, std::map<int, Client>::iterator it) {

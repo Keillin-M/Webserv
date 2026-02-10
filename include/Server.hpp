@@ -42,7 +42,6 @@ class Server {
 	public:
 		Server(int port, ServerConfig* cfg);
 		
-		void run();
 		void setupListenSocket();
 		void createPollFds(std::vector<struct pollfd>& pollFds, struct pollfd pfd);
 		void acceptNewClients();

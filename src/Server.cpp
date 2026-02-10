@@ -33,36 +33,3 @@ int Server::getPort() const {
 ServerConfig* Server::getConfig() {
 	return config;
 }
-
-void Server::run() {
-	setupListenSocket();
-	while (true) {
-		std::vector<struct pollfd> pollFds;
-		struct pollfd pfd;
-		createPollFds(pollFds, pfd);
-		int ready = poll(&pollFds[0], pollFds.size(), 1000);
-		if (ready < 0) {
-			if (errno == EINTR)
-				continue;
-			break;
-		}
-		// Timeout sweep (check every iteration, including idle ticks)
-		time_t now = std::time(NULL);
-		checkTimeouts(now, 60);
-		if (pollFds[0].revents & POLLIN)
-			acceptNewClients();		
-		for (size_t idx = 1; idx < pollFds.size(); ++idx) {
-			struct pollfd &entry = pollFds[idx];
-			int cfd = entry.fd;
-			std::map<int, Client>::iterator it = clients.find(cfd);
-			if (it == clients.end())
-				continue;
-			if (entry.revents & POLLIN)
-				handleClientRead(cfd, it);
-			if (entry.revents & POLLOUT) 
-				handleClientWrite(cfd, it);
-			if (it != clients.end()) 
-				closeIfComplete(cfd, it);
-		}
-	}
-}

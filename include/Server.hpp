@@ -37,6 +37,8 @@ class Server {
 		std::map<int, Client> clients;
 		ServerConfig* config;
 
+		void closeClient(int cfd);
+
 	public:
 		Server(int port, ServerConfig* cfg);
 		

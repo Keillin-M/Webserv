@@ -100,9 +100,7 @@ void Server::handleClientWrite(int cfd, std::map<int, Client>::iterator it) {
 		it->second.updateLastSeen();
 	} else {
 		// sent <= 0: error -- close client (no errno check per subject)
-		it->second.setState(CLOSING);
-		close(cfd);
-		clients.erase(it);
+		closeClient(cfd);
 	}
 }
 			
@@ -114,9 +112,7 @@ void Server::closeIfComplete(int cfd, std::map<int, Client>::iterator it) {
 		it->second.setState(IDLE);
 		it->second.clearReadBuffer();
 	} else {
-		it->second.setState(CLOSING);
-		close(cfd);
-		clients.erase(it);
+		closeClient(cfd);
 	}
 }
 
@@ -129,11 +125,16 @@ void Server::checkTimeouts(time_t now, int timeoutSecs) {
 			toClose.push_back(it->first);
 	}
 	for (size_t i = 0; i < toClose.size(); ++i) {
-		std::map<int, Client>::iterator it = clients.find(toClose[i]);
-		if (it != clients.end()) {
-			it->second.setState(CLOSING);
-			close(it->first);
-			clients.erase(it);
-		}
+		closeClient(toClose[i]);
 	}
+}
+
+// Centralised client cleanup - called from all close paths
+void Server::closeClient(int cfd) {
+	std::map<int, Client>::iterator it = clients.find(cfd);
+	if (it == clients.end())
+		return;  // already closed
+	it->second.setState(CLOSING);
+	close(cfd);
+	clients.erase(it);
 }

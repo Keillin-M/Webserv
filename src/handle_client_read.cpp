@@ -23,15 +23,11 @@ int Server::readClient(int cfd, std::map<int, Client>::iterator &it) {
 		it->second.appendRead(buf, static_cast<size_t>(bytesRead));
 	} else if (bytesRead == 0) {
 		// Peer closed connection (FIN received)
-		it->second.setState(CLOSING);
-		close(cfd);
-		clients.erase(it);
+		closeClient(cfd);
 		return 1;
 	} else {
 		// bytesRead < 0: error — close client (no errno check per subject)
-		it->second.setState(CLOSING);
-		close(cfd);
-		clients.erase(it);
+		closeClient(cfd);
 		return 1;
 	}
 	return 0;

@@ -51,6 +51,7 @@ class Server {
 		void handleMethod(Request &request, Response &response, const LocationConfig* matchedLocation, std::map<int, Client>::iterator &it);
 		void handleClientWrite(int cfd, std::map<int, Client>::iterator it);
 		void closeIfComplete(int cfd, std::map<int, Client>::iterator it);
+		void checkTimeouts(time_t now, int timeoutSecs);
 
 		std::map<int, Client>& getClients();
 		void setListenFd(int newFd);

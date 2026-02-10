@@ -6,7 +6,7 @@
 /*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:56:57 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/10 12:12:41 by gabrsouz         ###   ########.fr       */
+/*   Updated: 2026/02/10 12:39:42 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,11 @@
 #include <vector>
 #include <poll.h>
 #include <sys/socket.h>
+#include <cerrno>
+#include <cstring>
+#include <unistd.h>
+#include <fcntl.h>
+#include <netinet/in.h>
 #include <map>
 #include <set>
 #include "Client.hpp"

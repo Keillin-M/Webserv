@@ -10,6 +10,7 @@ SRC = src/main.cpp \
 	src/Response.cpp \
 	src/ServerManager.cpp \
 	src/CGI.cpp \
+	src/run_fts.cpp \
 	src/handle_client_read.cpp \
 	src/config/ConfigParser.cpp \
 	src/config/LocationConfig.cpp \

@@ -6,19 +6,14 @@
 /*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/10 11:25:08 by gabrsouz          #+#    #+#             */
-/*   Updated: 2026/02/10 12:12:55 by gabrsouz         ###   ########.fr       */
+/*   Updated: 2026/02/10 12:40:12 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/Server.hpp"
 #include "../include/Request.hpp"
 #include "../include/Response.hpp"
-#include <cerrno>
-#include <cstring>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
+
 
 void Server::emptyMatchLocation(Response &response, std::map<int, Client>::iterator &it) {
 	std::string errorPagePath;

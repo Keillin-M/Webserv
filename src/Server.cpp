@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: tmarcos <tmarcos@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:49 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/09 18:07:14 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/10 10:58:54 by tmarcos          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,12 +80,17 @@ void Server::createPollFds(std::vector<struct pollfd>& pollFds, struct pollfd pf
 	pfd.events = POLLIN;
 	pfd.revents = 0;
 	pollFds.push_back(pfd);
-	// add each client fd from the map
+	// add each client fd — state-aware event registration
 	std::map<int, Client>::const_iterator it;
 	for (it = clients.begin(); it != clients.end(); ++it) {
 		pfd.fd = it->first;
-		// request read events, and ask for POLLOUT only if there's pending data
-		pfd.events = POLLIN | (it->second.hasWrite() ? POLLOUT : 0);
+		short events = 0;
+		ClientState st = it->second.getState();
+		if (st == READING || st == IDLE || st == ACCEPTED)
+			events |= POLLIN;
+		if (st == WRITING || it->second.hasWrite())
+			events |= POLLOUT;
+		pfd.events = events;
 		pfd.revents = 0;
 		pollFds.push_back(pfd);
 	}
@@ -104,90 +109,116 @@ void Server::acceptNewClients() {
 		int clientFlags = fcntl(clientFd, F_GETFL, 0);
 		fcntl(clientFd, F_SETFL, clientFlags | O_NONBLOCK);
 		clients.insert(std::make_pair(clientFd, Client(clientFd)));
+		clients.find(clientFd)->second.setState(READING);
 		std::cout << "[Server] Client connected: fd=" << clientFd << std::endl;
 	}
 }
 
-void Server::handleClientRead(int cfd, std::map<int, Client>::iterator it){
+void Server::handleClientRead(int cfd, std::map<int, Client>::iterator it) {
 	char buf[4096];
-	ssize_t bytesRead = recv(cfd, buf, sizeof(buf), 0);
-	
-	if (bytesRead > 0) {
-		it->second.appendRead(buf, static_cast<size_t>(bytesRead));
-	} else if (bytesRead == 0) {
+
+	// --- Phase 1: drain socket until EAGAIN or error ---
+	while (true) {
+		ssize_t n = recv(cfd, buf, sizeof(buf), 0);
+		if (n > 0) {
+			it->second.appendRead(buf, static_cast<size_t>(n));
+			continue;
+		}
+		if (n == 0) {
+			// Peer closed connection (FIN received)
+			it->second.setState(CLOSING);
+			close(cfd);
+			clients.erase(it);
+			return;
+		}
+		// n < 0: check errno
+		if (errno == EAGAIN || errno == EWOULDBLOCK)
+			break; // socket drained — normal for non-blocking
+		// Real error (ECONNRESET, etc.)
+		std::cerr << "[Server] recv error fd=" << cfd
+				  << ": " << strerror(errno) << std::endl;
+		it->second.setState(CLOSING);
 		close(cfd);
 		clients.erase(it);
 		return;
-	} if (it->second.requestCompleteCheck()) {
-		Request request;
-		request.parseRequest(it->second.getReadBuffer());
-		
-		Response response;
-		std::string httpResponse;
+	}
 
-		// Validate HTTP version - only accept HTTP/1.1
-		if (request.getVersion() != "HTTP/1.1") {
-			httpResponse = response.errorResponse(505, "HTTP Version Not Supported");
-			it->second.appendWrite(httpResponse);
-			it->second.clearReadBuffer();
-			return;
-		}
-			
-			const LocationConfig* matchedLocation = config->findMatchLocation(request.getPath());
-			
-			if (matchedLocation == NULL) {
-				std::string errorPagePath;
-				std::map<int, std::string> errorPages = config->getErrorPages();
-				if (errorPages.find(500) != errorPages.end()) {
-				errorPagePath = config->getRoot() + "/" + errorPages[500];
-				}
-				httpResponse = response.errorResponse(500, "Internal Server Error", errorPagePath);
-				it->second.appendWrite(httpResponse);
-				it->second.clearReadBuffer();
-				return ;
-			}
+	// --- Phase 2: check if a complete request has arrived ---
+	if (!it->second.requestCompleteCheck())
+		return; // still accumulating data — wait for next POLLIN
 
-			std::string rootDir = matchedLocation->getRoot();
-			
-			if (!matchedLocation->isMethodAllowed(request.getMethod())) {
-				std::string errorPagePath;
-				std::map<int, std::string> errorPages = config->getErrorPages();
-				if (errorPages.find(405) != errorPages.end()) {
-					errorPagePath = rootDir + "/" + errorPages[405];
-				}
-				httpResponse = response.errorResponse(405,"Method Not Allowed", errorPagePath);
-				it->second.appendWrite(httpResponse);
-				it->second.clearReadBuffer();
-				return ;
-			}
-			
-			// Resolve root: use location root, fallback to server root
-			if (rootDir.empty()) {
-				rootDir = config->getRoot();
-			}
-			
-			// Get index file from location (or default)
-			std::string indexFile = matchedLocation->getIndexFile();
-			if (indexFile.empty()) {
-				indexFile = "index.html";
-			}
-			
-			std::string uploadDir = rootDir + "/uploads";
-			
-			if (request.getMethod() == "GET") {
-				httpResponse = response.handleGet(request.getPath(), rootDir, indexFile);
-			} else if (request.getMethod() == "POST") {
-				httpResponse = response.handlePost(request.getBody(), uploadDir);
-			} else if (request.getMethod() == "DELETE") {
-				// Check if path starts with /upload to determine directory
-				std::string path = request.getPath();
-				std::string deleteDir = (path.find("upload") != std::string::npos) ? uploadDir : rootDir;
-				httpResponse = response.handleDelete(path, deleteDir);
-			} else
-				httpResponse = response.errorResponse(501, "Method not allowed");
-			it->second.appendWrite(httpResponse);
-			it->second.clearReadBuffer();
+	// Transition: request fully received, now processing + writing
+	it->second.setState(WRITING);
+
+	Request request;
+	request.parseRequest(it->second.getReadBuffer());
+
+	Response response;
+	std::string httpResponse;
+
+	// Validate HTTP version — only accept HTTP/1.1
+	if (request.getVersion() != "HTTP/1.1") {
+		httpResponse = response.errorResponse(505, "HTTP Version Not Supported");
+		it->second.appendWrite(httpResponse);
+		it->second.clearReadBuffer();
+		return;
+	}
+
+	const LocationConfig* matchedLocation = config->findMatchLocation(request.getPath());
+
+	if (matchedLocation == NULL) {
+		std::string errorPagePath;
+		std::map<int, std::string> errorPages = config->getErrorPages();
+		if (errorPages.find(500) != errorPages.end()) {
+			errorPagePath = config->getRoot() + "/" + errorPages[500];
 		}
+		httpResponse = response.errorResponse(500, "Internal Server Error", errorPagePath);
+		it->second.appendWrite(httpResponse);
+		it->second.clearReadBuffer();
+		return;
+	}
+
+	std::string rootDir = matchedLocation->getRoot();
+
+	if (!matchedLocation->isMethodAllowed(request.getMethod())) {
+		std::string errorPagePath;
+		std::map<int, std::string> errorPages = config->getErrorPages();
+		if (errorPages.find(405) != errorPages.end()) {
+			errorPagePath = rootDir + "/" + errorPages[405];
+		}
+		httpResponse = response.errorResponse(405, "Method Not Allowed", errorPagePath);
+		it->second.appendWrite(httpResponse);
+		it->second.clearReadBuffer();
+		return;
+	}
+
+	// Resolve root: use location root, fallback to server root
+	if (rootDir.empty()) {
+		rootDir = config->getRoot();
+	}
+
+	// Get index file from location (or default)
+	std::string indexFile = matchedLocation->getIndexFile();
+	if (indexFile.empty()) {
+		indexFile = "index.html";
+	}
+
+	std::string uploadDir = rootDir + "/uploads";
+
+	if (request.getMethod() == "GET") {
+		httpResponse = response.handleGet(request.getPath(), rootDir, indexFile);
+	} else if (request.getMethod() == "POST") {
+		httpResponse = response.handlePost(request.getBody(), uploadDir);
+	} else if (request.getMethod() == "DELETE") {
+		std::string path = request.getPath();
+		std::string deleteDir = (path.find("upload") != std::string::npos) ? uploadDir : rootDir;
+		httpResponse = response.handleDelete(path, deleteDir);
+	} else {
+		httpResponse = response.errorResponse(501, "Method not allowed");
+	}
+
+	it->second.appendWrite(httpResponse);
+	it->second.clearReadBuffer();
 }
 
 void Server::handleClientWrite(int cfd, std::map<int, Client>::iterator it) {

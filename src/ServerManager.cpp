@@ -74,14 +74,20 @@ void ServerManager::buildPollArray(std::vector<struct pollfd>& fds) {
 		fds.push_back(pfd);
 	}
 	
-	// Add all client sockets
+	// Add all client sockets — state-aware event registration
 	for (size_t i = 0; i < servers.size(); ++i) {
 		std::map<int, Client>& clients = servers[i]->getClients();
 		
 		for (std::map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it) {
 			struct pollfd pfd;
 			pfd.fd = it->first;
-			pfd.events = POLLIN | (it->second.hasWrite() ? POLLOUT : 0);
+			short events = 0;
+			ClientState st = it->second.getState();
+			if (st == READING || st == IDLE || st == ACCEPTED)
+				events |= POLLIN;
+			if (st == WRITING || it->second.hasWrite())
+				events |= POLLOUT;
+			pfd.events = events;
 			pfd.revents = 0;
 			fds.push_back(pfd);
 		}

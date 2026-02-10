@@ -139,3 +139,112 @@ Evaluators care more about **correct HTTP behavior** than fancy extras.
 
 ---
 
+Taninha — Network & Stability
+Monday
+•⁠  ⁠Refactor socket setup to support multiple servers / ports
+         -  Loop over config servers
+         - One listening socket per server
+•⁠  ⁠Verify bind / listen logic per port
+•⁠  ⁠Basic accept loop per server
+•⁠  ⁠Test: run 2 ports simultaneously with curl
+
+Tuesday
+•⁠  ⁠Implement client lifecycle
+        - Client struct (fd, buffer, state, last_activity)
+        - Add client add/remove logic
+•⁠  ⁠Handle partial reads
+        - Read until no more data / EAGAIN
+        - Append to buffer
+•⁠  ⁠Basic request completion detection (don’t parse, just detect end)
+
+Thursday
+•⁠  ⁠Implement partial writes
+        - Track response offset
+        - Write until done or EAGAIN
+•⁠  ⁠Add timeouts
+        - Track last activity time
+        - Close idle clients (read + write timeout)
+•⁠  ⁠Stress test with slow clients
+
+Friday
+•⁠  ⁠Proper close & cleanup
+        - Close sockets safely
+        - Free buffers
+        - Remove client from poll/epoll/select
+•⁠  ⁠Edge cases:
+        - Client disconnect mid-request
+        - Client disconnect mid-response
+•⁠  ⁠Final stability test (many connects / disconnects)
+
+🌐 Gab — HTTP Core
+Monday
+•⁠  ⁠Implement full HTTP request parsing
+        - Request line
+        - Headers
+        - Body (Content-Length)
+•⁠  ⁠Support chunked parsing later (note but don’t implement yet)
+•⁠  ⁠Build internal Request object
+
+Tuesday
+•⁠  ⁠Implement GET
+        - File read
+        - Directory handling (index delegated to config)
+•⁠  ⁠Implement POST
+        - Read body
+        - Temporary upload handling
+•⁠  ⁠Return correct status codes (200, 201, 400)
+
+Thursday
+•⁠  ⁠Implement DELETE
+        - File existence checks
+        - Permission checks
+•⁠  ⁠Implement error responses
+        - 400, 403, 404, 405, 500
+•⁠  ⁠Match responses to nginx behavior as much as possible
+
+Friday
+•⁠  ⁠Implement file serving
+        - Content-Length
+        - Content-Type (basic mapping)
+•⁠  ⁠Final curl tests:
+        curl localhost:8080/
+        curl -X POST localhost:8080/upload
+        curl -X DELETE localhost:8080/file
+•⁠  ⁠Sync with Person 3 for config-based behavior
+
+⚙️ Kei — Config System
+Monday
+•⁠  ⁠Define config grammar
+        - server blocks
+        - listen
+        - root
+        - error_page
+        - location
+•⁠  ⁠Write parser skeleton
+•⁠  ⁠Load config into internal structures
+
+Tuesday
+•⁠  ⁠Implement location matching
+        - Longest prefix match
+        - Default location fallback
+•⁠  ⁠Implement allowed methods
+        - Store per location
+        - Reject invalid methods (405)
+
+Thursday
+•⁠  ⁠Implement roots & index
+        - Root resolution per location
+        - Index file logic
+•⁠  ⁠Implement error pages
+         - Map status → file
+        - Fallback if missing
+
+Friday
+•⁠  ⁠Validation & cleanup
+        - Invalid config handling
+        - Missing fields defaults
+•⁠  ⁠Sync behavior with HTTP core
+•⁠  ⁠nginx comparison tests:
+        - Wrong method
+        - Missing file
+        - Custom error page

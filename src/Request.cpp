@@ -6,7 +6,7 @@
 /*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:41 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/06 15:29:13 by gabrsouz         ###   ########.fr       */
+/*   Updated: 2026/02/10 15:15:58 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,21 +15,18 @@
 
 Request::Request() {}
 
-// Parse initial request line: METHOD SP PATH SP VERSION CRLF
+// Parse initial request line: METHOD, PATH, VERSION CRLF
 void Request::setParseVariables(const std::vector<std::string>& parse) {
 	method.clear();
 	path.clear();
 	version.clear();
 	headers.clear();
     body.clear();
-
 	if (parse.empty())
 		return;
-
 	// Request Line
 	std::istringstream iss(parse[0]);
 	iss >> method >> path >> version;
-
 	// Headers
 	size_t pos = 0;
 	std::string key, value;
@@ -44,11 +41,11 @@ void Request::setParseVariables(const std::vector<std::string>& parse) {
     	    value = value.substr(start);
 		headers[key] = value;
 	}
-	
 	//Body
 	body = parse.back();
 }
 
+// Split raw HTTP request into lines and body, then parse fields
 void Request::parseRequest(const std::string& rawRequest) {
 	std::vector<std::string> parse;
 	size_t pos = 0;
@@ -70,11 +67,17 @@ void Request::parseRequest(const std::string& rawRequest) {
 	setParseVariables(parse);
 }
 
-std::string Request::getMethod() const { return method; }
+std::string Request::getMethod() const { 
+	return method; 
+}
 
-std::string Request::getPath() const { return path; }
+std::string Request::getPath() const {
+	return path;
+}
 
-std::string Request::getVersion() const { return version; }
+std::string Request::getVersion() const {
+	return version;
+}
 
 std::string Request::getHeader(const std::string& name) const {
 	std::map<std::string, std::string>::const_iterator it = headers.find(name);

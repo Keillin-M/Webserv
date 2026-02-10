@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:41 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/10 14:49:36 by gabrsouz         ###   ########.fr       */
+/*   Updated: 2026/02/10 15:26:07 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,20 @@
 
 Response::Response() {}
 
+// Store error page configuration from server config
+void Response::setErrorPages(const std::map<int, std::string>& pages, const std::string& root) {
+	errorPages = pages;
+	errorRoot = root;
+}
+
+// Get custom error page path for a status code, or empty string if not configured
+std::string Response::getErrorPagePath(int statusCode) {
+	if (errorPages.find(statusCode) != errorPages.end())
+		return errorRoot + "/" + errorPages[statusCode];
+	return "";
+}
+
+// Build complete HTTP response with status line, headers, and body
 std::string Response::buildHttpResponse(){
 	std::string response;
     
@@ -59,6 +73,7 @@ std::string Response::buildHttpResponse(){
     return response;
 }
 
+// Determine type based on file extension
 std::string Response::getContentType(const std::string& path) {
 	// Text types
 	if (path.find(".html") != std::string::npos)
@@ -109,6 +124,7 @@ std::string Response::getContentType(const std::string& path) {
     return "application/octet-stream"; //default
 }
 
+// Read entire file contents into string
 bool Response::readFile(const std::string& filepath, std::string& contentFile) {
 	std::ifstream file(filepath.c_str(), std::ios::in | std::ios::binary);
 	if (!file.is_open())
@@ -119,11 +135,13 @@ bool Response::readFile(const std::string& filepath, std::string& contentFile) {
 	return true;
 }
 
+// Check if file or directory exists
 bool Response::fileExists(const std::string& filepath) {
 	struct stat buffer;
 	return (stat(filepath.c_str(), &buffer) == 0);
 }
 
+// Check if path is a directory
 bool Response::isDirectory(const std::string& path) {
 	struct stat buffer;
 	if (stat(path.c_str(), &buffer) != 0)
@@ -131,6 +149,7 @@ bool Response::isDirectory(const std::string& path) {
 	return S_ISDIR(buffer.st_mode);
 }
 
+// Validate path to prevent directory traversal attacks
 bool Response::isSafePath(const std::string& path) {
 	// Reject paths containing ".."
 	if (path.find("..") != std::string::npos)
@@ -141,6 +160,7 @@ bool Response::isSafePath(const std::string& path) {
 	return true;
 }
 
+// Handle GET request: serve file or index file for directories
 std::string Response::handleGet(const std::string& path, const std::string& rootDir, const std::string& indexFile) {
 	// Security: check for directory traversal
 	if (!isSafePath(path))
@@ -167,6 +187,7 @@ std::string Response::handleGet(const std::string& path, const std::string& root
     return buildHttpResponse();
 }
 
+// Handle POST request: save uploaded data to file
 std::string Response::handlePost(const std::string& requestBody, const std::string& uploadDir) {
 	if (requestBody.empty())
         return errorResponse(400, "Bad Request - Empty body");
@@ -185,6 +206,7 @@ std::string Response::handlePost(const std::string& requestBody, const std::stri
 	return buildHttpResponse();
 }
 
+// Handle DELETE request: remove specified file
 std::string Response::handleDelete(const std::string& path, const std::string& rootDir) {
 	// Security: check for directory traversal
 	if (!isSafePath(path))
@@ -202,13 +224,17 @@ std::string Response::handleDelete(const std::string& path, const std::string& r
 	return buildHttpResponse();
 }
 
+// Generate error response with custom page if available, plain text otherwise
 std::string Response::errorResponse(int statusCode, const std::string& message, const std::string& customErrorPage) {
 	status = statusCode;
     body = message;
-    // Try custom error page
-    if (!customErrorPage.empty() && fileExists(customErrorPage)) {
-        if (readFile(customErrorPage, body)) {
-            headers["Content-Type"] = getContentType(customErrorPage);
+    
+    // Use provided path OR auto-lookup from stored errorPages
+    std::string errorPage = customErrorPage.empty() ? getErrorPagePath(statusCode) : customErrorPage;
+    
+    if (!errorPage.empty() && fileExists(errorPage)) {
+        if (readFile(errorPage, body)) {
+            headers["Content-Type"] = getContentType(errorPage);
             return buildHttpResponse();
         }
     }

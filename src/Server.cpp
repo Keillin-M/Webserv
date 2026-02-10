@@ -67,8 +67,18 @@ void Server::setupListenSocket() {
 	setsockopt(listenFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 	
 	iniciateAddr(addr, port);
-	bind(listenFd, (struct sockaddr *)&addr, sizeof(addr));
-	listen(listenFd, SOMAXCONN);
+	if (bind(listenFd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+		std::cerr << "bind error on port " << port << ": " << strerror(errno) << std::endl;
+		close(listenFd);
+		listenFd = -1;
+		return;
+	}
+	if (listen(listenFd, SOMAXCONN) < 0) {
+		std::cerr << "listen error on port " << port << ": " << strerror(errno) << std::endl;
+		close(listenFd);
+		listenFd = -1;
+		return;
+	}
 
 	// (subject) "non-blocking at all times"
 	int flags = fcntl(listenFd, F_GETFL, 0);
@@ -116,34 +126,26 @@ void Server::acceptNewClients() {
 
 void Server::handleClientRead(int cfd, std::map<int, Client>::iterator it) {
 	char buf[4096];
+	ssize_t n = recv(cfd, buf, sizeof(buf), 0);
 
-	// --- Phase 1: drain socket until EAGAIN or error ---
-	while (true) {
-		ssize_t n = recv(cfd, buf, sizeof(buf), 0);
-		if (n > 0) {
-			it->second.appendRead(buf, static_cast<size_t>(n));
-			continue;
-		}
-		if (n == 0) {
-			// Peer closed connection (FIN received)
-			it->second.setState(CLOSING);
-			close(cfd);
-			clients.erase(it);
-			return;
-		}
-		// n < 0: check errno
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			break; // socket drained — normal for non-blocking
-		// Real error (ECONNRESET, etc.)
-		std::cerr << "[Server] recv error fd=" << cfd
-				  << ": " << strerror(errno) << std::endl;
+	if (n > 0) {
+		it->second.appendRead(buf, static_cast<size_t>(n));
+	} else if (n == 0) {
+		// Peer closed connection (FIN received)
+		it->second.setState(CLOSING);
+		close(cfd);
+		clients.erase(it);
+		return;
+	} else {
+		// n < 0: error — close client (no errno check per subject rules)
 		it->second.setState(CLOSING);
 		close(cfd);
 		clients.erase(it);
 		return;
 	}
 
-	// --- Phase 2: check if a complete request has arrived ---
+	// Check if a complete request has arrived
+	// poll() is level-triggered: if more data remains, POLLIN fires again
 	if (!it->second.requestCompleteCheck())
 		return; // still accumulating data — wait for next POLLIN
 

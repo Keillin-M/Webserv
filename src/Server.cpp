@@ -45,7 +45,11 @@ void Server::run() {
 			if (errno == EINTR)
 				continue;
 			break;
-		} if (pollFds[0].revents & POLLIN)
+		}
+		// Timeout sweep (check every iteration, including idle ticks)
+		time_t now = std::time(NULL);
+		checkTimeouts(now, 60);
+		if (pollFds[0].revents & POLLIN)
 			acceptNewClients();		
 		for (size_t idx = 1; idx < pollFds.size(); ++idx) {
 			struct pollfd &entry = pollFds[idx];

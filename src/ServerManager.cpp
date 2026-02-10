@@ -164,8 +164,13 @@ void ServerManager::run() {
 				continue;  // Interrupted by signal, retry
 			std::cerr << "[ServerManager] poll() error: " << strerror(errno) << std::endl;
 			break;
-		} if (ready == 0) // No events ready, continue waiting
-			continue;
+		} if (ready == 0) {
+			// No events -- still check timeouts on idle tick
+		}
+		// Timeout sweep (check every iteration, including idle ticks)
+		time_t now = std::time(NULL);
+		for (size_t i = 0; i < servers.size(); ++i)
+			servers[i]->checkTimeouts(now, 60);
 		// Process all sockets with events
 		for (size_t i = 0; i < pollFds.size(); ++i) {
 			if (pollFds[i].revents == 0)

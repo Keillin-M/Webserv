@@ -89,27 +89,50 @@ void Server::acceptNewClients() {
 	}
 }
 
-// Send data from write buffer to client socket
+// Send data from write buffer to client socket (single send per POLLOUT)
 void Server::handleClientWrite(int cfd, std::map<int, Client>::iterator it) {
 	std::string &out = it->second.getWriteBuffer();
-	// Keep sending until buffer is empty or send fails
-	while (!out.empty()) {
-		ssize_t sent = send(cfd, out.data(), out.size(), 0);
-		if (sent > 0) {
-			// Remove sent bytes from buffer
-			out.erase(0, static_cast<size_t>(sent));
-			continue;
-		} else
-			break;  // Socket not ready or error occurred
+	if (out.empty())
+		return;
+	ssize_t sent = send(cfd, out.data(), out.size(), 0);
+	if (sent > 0) {
+		out.erase(0, static_cast<size_t>(sent));
+		it->second.updateLastSeen();
+	} else {
+		// sent <= 0: error -- close client (no errno check per subject)
+		it->second.setState(CLOSING);
+		close(cfd);
+		clients.erase(it);
 	}
 }
 			
-// Check if response is complete and close if not keep-alive
+// Check if response is complete and transition to IDLE or close
 void Server::closeIfComplete(int cfd, std::map<int, Client>::iterator it) {
-	// Close if write buffer is empty (response sent) and keep-alive is disabled
-	if (it->second.getWriteBuffer().empty()) {
-		if (!it->second.isKeepAlive()) {
-			close(cfd);
+	if (!it->second.getWriteBuffer().empty())
+		return;
+	if (it->second.isKeepAlive()) {
+		it->second.setState(IDLE);
+		it->second.clearReadBuffer();
+	} else {
+		it->second.setState(CLOSING);
+		close(cfd);
+		clients.erase(it);
+	}
+}
+
+// Close idle clients that exceed timeout (two-pass to avoid iterator invalidation)
+void Server::checkTimeouts(time_t now, int timeoutSecs) {
+	std::vector<int> toClose;
+	for (std::map<int, Client>::iterator it = clients.begin();
+		 it != clients.end(); ++it) {
+		if (now - it->second.getLastSeen() > timeoutSecs)
+			toClose.push_back(it->first);
+	}
+	for (size_t i = 0; i < toClose.size(); ++i) {
+		std::map<int, Client>::iterator it = clients.find(toClose[i]);
+		if (it != clients.end()) {
+			it->second.setState(CLOSING);
+			close(it->first);
 			clients.erase(it);
 		}
 	}

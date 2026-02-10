@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:56:57 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/10 12:39:42 by gabrsouz         ###   ########.fr       */
+/*   Updated: 2026/02/10 15:26:07 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ class Server {
 		void acceptNewClients();
 		void handleClientRead(int cfd, std::map<int, Client>::iterator it);
 		int readClient(int cfd, std::map<int, Client>::iterator &it);
-		void emptyMatchLocation(Response &response, std::map<int, Client>::iterator &it);
+
 		void handleUnallowedMethod(Response &response, std::map<int, Client>::iterator &it, std::string rootDir);
 		void handleMethod(Request &request, Response &response, const LocationConfig* matchedLocation, std::map<int, Client>::iterator &it);
 		void handleClientWrite(int cfd, std::map<int, Client>::iterator it);

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   handle_client_read.cpp                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/10 11:25:08 by gabrsouz          #+#    #+#             */
-/*   Updated: 2026/02/10 12:40:12 by gabrsouz         ###   ########.fr       */
+/*   Updated: 2026/02/10 15:26:07 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,16 +14,7 @@
 #include "../include/Request.hpp"
 #include "../include/Response.hpp"
 
-
-void Server::emptyMatchLocation(Response &response, std::map<int, Client>::iterator &it) {
-	std::string errorPagePath;
-	std::map<int, std::string> errorPages = config->getErrorPages();
-	if (errorPages.find(500) != errorPages.end())
-		errorPagePath = config->getRoot() + "/" + errorPages[500];
-	it->second.appendWrite(response.errorResponse(500, "Internal Server Error", errorPagePath));
-	it->second.clearReadBuffer();
-}
-
+// Read data from client socket into buffer, handle disconnection/errors
 int Server::readClient(int cfd, std::map<int, Client>::iterator &it) {
 	char buf[4096];
 	ssize_t bytesRead = recv(cfd, buf, sizeof(buf), 0);
@@ -46,16 +37,14 @@ int Server::readClient(int cfd, std::map<int, Client>::iterator &it) {
 	return 0;
 }
 
+// Generate 405 Method Not Allowed response when HTTP method is disallowed
 void Server::handleUnallowedMethod(Response &response, std::map<int, Client>::iterator &it, std::string rootDir) {
-	std::string errorPagePath;
-	std::map<int, std::string> errorPages = config->getErrorPages();
-	if (errorPages.find(405) != errorPages.end()) {
-		errorPagePath = rootDir + "/" + errorPages[405];
-	}
-	it->second.appendWrite(response.errorResponse(405,"Method Not Allowed", errorPagePath));
+	response.setErrorPages(config->getErrorPages(), config->getRoot());
+	it->second.appendWrite(response.errorResponse(405, "Method Not Allowed"));
 	it->second.clearReadBuffer();
 }
 
+// Route request to appropriate handler based on HTTP method (GET/POST/DELETE)
 void Server::handleMethod(Request &request, Response &response, const LocationConfig* matchedLocation, std::map<int, Client>::iterator &it) {
 	std::string httpResponse;
 	std::string rootDir = matchedLocation->getRoot();
@@ -63,6 +52,10 @@ void Server::handleMethod(Request &request, Response &response, const LocationCo
 	if (indexFile.empty())
 			indexFile = "index.html";
 	std::string uploadDir = rootDir + "/uploads";
+	
+	// Set error pages for Response object
+	response.setErrorPages(config->getErrorPages(), config->getRoot());
+	
 	if (request.getMethod() == "GET") {
 		httpResponse = response.handleGet(request.getPath(), rootDir, indexFile);
 	} else if (request.getMethod() == "POST") {
@@ -72,12 +65,15 @@ void Server::handleMethod(Request &request, Response &response, const LocationCo
 		std::string path = request.getPath();
 		std::string deleteDir = (path.find("upload") != std::string::npos) ? uploadDir : rootDir;
 		httpResponse = response.handleDelete(path, deleteDir);
-	} else
-		httpResponse = response.errorResponse(501, "Method not allowed");
+	} else {
+		response.setErrorPages(config->getErrorPages(), config->getRoot());
+		httpResponse = response.errorResponse(501, "Not Implemented");
+	}
 	it->second.appendWrite(httpResponse);
 	it->second.clearReadBuffer();
 }
 
+// Main entry point: read request, validate, find location, and generate response
 void Server::handleClientRead(int cfd, std::map<int, Client>::iterator it) {
 	if (readClient(cfd, it))
 		return;
@@ -87,13 +83,16 @@ void Server::handleClientRead(int cfd, std::map<int, Client>::iterator it) {
 		Response response;
 		request.parseRequest(it->second.getReadBuffer());
 		if (request.getVersion() != "HTTP/1.1") {
+			response.setErrorPages(config->getErrorPages(), config->getRoot());
 			it->second.appendWrite(response.errorResponse(505, "HTTP Version Not Supported"));
 			it->second.clearReadBuffer();
 			return;
 		}
 		const LocationConfig* matchedLocation = config->findMatchLocation(request.getPath());
 		if (matchedLocation == NULL) {
-			emptyMatchLocation(response, it);
+			response.setErrorPages(config->getErrorPages(), config->getRoot());
+			it->second.appendWrite(response.errorResponse(500, "Internal Server Error"));
+			it->second.clearReadBuffer();
 			return ;
 		} std::string rootDir = matchedLocation->getRoot();
 		if (rootDir.empty()) 

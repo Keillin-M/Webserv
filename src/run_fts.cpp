@@ -6,12 +6,13 @@
 /*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/10 12:24:17 by gabrsouz          #+#    #+#             */
-/*   Updated: 2026/02/10 14:32:26 by gabrsouz         ###   ########.fr       */
+/*   Updated: 2026/02/10 15:03:09 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/Server.hpp"
 
+// Initialize socket address structure for IPv4
 static void iniciateAddr(struct sockaddr_in& addr, int port) {
 	std::memset(&addr, 0, sizeof(addr)); //iniciate memory
 	addr.sin_family = AF_INET;  //ipv4
@@ -26,36 +27,42 @@ void Server::setupListenSocket() {
 		std::cerr << "socket error: " << strerror(errno) << std::endl;
 		return;
 	}
+	// Allow socket reuse (avoid TIME_WAIT binding issues)
 	int opt = 1;
 	setsockopt(listenFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-	
 	iniciateAddr(addr, port);
+	// Bind socket to specified port
 	if (bind(listenFd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
 		std::cerr << "bind error on port " << port << ": " << strerror(errno) << std::endl;
 		close(listenFd);
 		listenFd = -1;
 		return;
-	} if (listen(listenFd, SOMAXCONN) < 0) {
+	} if (listen(listenFd, SOMAXCONN) < 0) { // Start listening for connections
 		std::cerr << "listen error on port " << port << ": " << strerror(errno) << std::endl;
 		close(listenFd);
 		listenFd = -1;
 		return;
-	} int flags = fcntl(listenFd, F_GETFL, 0);
+	} int flags = fcntl(listenFd, F_GETFL, 0); // Set non-blocking mode (required by subject)
 	fcntl(listenFd, F_SETFL, flags | O_NONBLOCK);
 }
 
+// Build poll array: add listening socket + all client sockets with state-aware events
 void Server::createPollFds(std::vector<struct pollfd>& pollFds, struct pollfd pfd) {
+	// Add listening socket (always waiting for new connections)
 	pfd.fd = listenFd;
 	pfd.events = POLLIN;
 	pfd.revents = 0;
 	pollFds.push_back(pfd);
+	// Add all client sockets with appropriate event flags
 	std::map<int, Client>::const_iterator it;
 	for (it = clients.begin(); it != clients.end(); ++it) {
 		pfd.fd = it->first;
 		short events = 0;
 		ClientState st = it->second.getState();
+		// Request POLLIN if reading, idle, or just accepted
 		if (st == READING || st == IDLE || st == ACCEPTED)
 			events |= POLLIN;
+		// Request POLLOUT if writing or has pending data
 		if (st == WRITING || it->second.hasWrite())
 			events |= POLLOUT;
 		pfd.events = events;
@@ -64,33 +71,42 @@ void Server::createPollFds(std::vector<struct pollfd>& pollFds, struct pollfd pf
 	}
 }
 
+// Accept all waiting connections and set them to non-blocking
 void Server::acceptNewClients() {
 	while (true) {
+		// Try to accept next connection
 		int clientFd = accept(listenFd, NULL, NULL);
 		if (clientFd > 0) {
-		int clientFlags = fcntl(clientFd, F_GETFL, 0);
-		fcntl(clientFd, F_SETFL, clientFlags | O_NONBLOCK);
-		clients.insert(std::make_pair(clientFd, Client(clientFd)));
-		clients.find(clientFd)->second.setState(READING);
-		std::cout << "[Server] Client connected: fd=" << clientFd << std::endl;
+			// Set non-blocking mode (required by subject)
+			int clientFlags = fcntl(clientFd, F_GETFL, 0);
+			fcntl(clientFd, F_SETFL, clientFlags | O_NONBLOCK);
+			// Add client to map and initialize with READING state
+			clients.insert(std::make_pair(clientFd, Client(clientFd)));
+			clients.find(clientFd)->second.setState(READING);
+			std::cout << "[Server] Client connected: fd=" << clientFd << std::endl;
 		} else
-			break;
+			break;  // No more connections waiting
 	}
 }
 
+// Send data from write buffer to client socket
 void Server::handleClientWrite(int cfd, std::map<int, Client>::iterator it) {
 	std::string &out = it->second.getWriteBuffer();
+	// Keep sending until buffer is empty or send fails
 	while (!out.empty()) {
 		ssize_t sent = send(cfd, out.data(), out.size(), 0);
 		if (sent > 0) {
+			// Remove sent bytes from buffer
 			out.erase(0, static_cast<size_t>(sent));
 			continue;
 		} else
-			break;
+			break;  // Socket not ready or error occurred
 	}
 }
 			
-void Server::closeIfComplete(int cfd, std::map<int, Client>::iterator it){
+// Check if response is complete and close if not keep-alive
+void Server::closeIfComplete(int cfd, std::map<int, Client>::iterator it) {
+	// Close if write buffer is empty (response sent) and keep-alive is disabled
 	if (it->second.getWriteBuffer().empty()) {
 		if (!it->second.isKeepAlive()) {
 			close(cfd);

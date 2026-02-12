@@ -6,11 +6,11 @@
 /*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:49 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/10 12:40:06 by gabrsouz         ###   ########.fr       */
+/*   Updated: 2026/02/12 12:38:43 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/Server.hpp"
+#include "../../include/core/Server.hpp"
 
 Server::Server(int port, ServerConfig* cfg) : listenFd(-1), port(port), config(cfg) {}
 

@@ -6,11 +6,11 @@
 /*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/10 12:24:17 by gabrsouz          #+#    #+#             */
-/*   Updated: 2026/02/10 15:03:09 by gabrsouz         ###   ########.fr       */
+/*   Updated: 2026/02/12 12:38:47 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/Server.hpp"
+#include "../../include/core/Server.hpp"
 
 // Initialize socket address structure for IPv4
 static void iniciateAddr(struct sockaddr_in& addr, int port) {

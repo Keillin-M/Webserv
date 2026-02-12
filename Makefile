@@ -4,17 +4,17 @@ CXXFLAGS = -Wall -Wextra -Werror -std=c++98
 INCLUDES = -I include
 
 SRC = src/main.cpp \
-	src/Client.cpp \
-	src/Server.cpp \
-	src/Request.cpp \
-	src/Response.cpp \
-	src/ServerManager.cpp \
-	src/CGI.cpp \
-	src/run_fts.cpp \
-	src/handle_client_read.cpp \
+	src/cgi/CGI.cpp \
 	src/config/ConfigParser.cpp \
 	src/config/LocationConfig.cpp \
 	src/config/ServerConfig.cpp \
+	src/core/Client.cpp \
+	src/core/Server.cpp \
+	src/core/run_fts.cpp \
+	src/core/ServerManager.cpp \
+	src/http/Request.cpp \
+	src/http/Response.cpp \
+	src/http/handle_client_read.cpp 
 
 OBJ = $(SRC:src/%.cpp=obj/%.o)
 

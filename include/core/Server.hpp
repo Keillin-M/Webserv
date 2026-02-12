@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:56:57 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/10 15:28:29 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/12 12:47:49 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,8 +26,8 @@
 #include <map>
 #include <set>
 #include "Client.hpp"
-#include "Request.hpp"
-#include "Response.hpp"
+#include "../http/Request.hpp"
+#include "../http/Response.hpp"
 #include "config/ServerConfig.hpp"
 
 class Server {
@@ -59,26 +59,6 @@ class Server {
 		int getListenFd() const;
 		int getPort() const;
 		ServerConfig* getConfig();
-};
-
-class ServerManager {
-	private:
-		std::vector<Server*> servers;
-		std::map<int, Server*> listenFdToServer;
-		std::map<int, Server*> clientFdToServer;
-		
-		void buildPollArray(std::vector<struct pollfd>& fds);
-		void handleListenSocket(int fd);
-		void handleClientSocket(int fd, short revents);
-		void validatePorts(std::vector<ServerConfig>& configs);
-		void updateClientMapping(Server* server);
-		
-	public:
-		ServerManager();
-		~ServerManager();
-		
-		void initialize(std::vector<ServerConfig>& configs);
-		void run();
 };
 
 #endif

@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:41 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/10 15:26:07 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/12 12:37:53 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/Response.hpp"
+#include "../../include/http/Response.hpp"
 
 Response::Response() {}
 

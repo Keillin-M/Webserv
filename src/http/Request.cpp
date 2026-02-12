@@ -6,11 +6,11 @@
 /*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:41 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/10 15:15:58 by gabrsouz         ###   ########.fr       */
+/*   Updated: 2026/02/12 12:38:03 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/Request.hpp"
+#include "../../include/http/Request.hpp"
 #include <sstream>
 
 Request::Request() {}

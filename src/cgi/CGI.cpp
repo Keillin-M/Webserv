@@ -3,13 +3,13 @@
 /*                                                        :::      ::::::::   */
 /*   CGI.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 14:40:53 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/02 14:40:54 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/12 12:37:41 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/CGI.hpp"
+#include "../../include/cgi/CGI.hpp"
 
 CGI::CGI() {}

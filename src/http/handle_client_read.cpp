@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   handle_client_read.cpp                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/10 11:25:08 by gabrsouz          #+#    #+#             */
-/*   Updated: 2026/02/10 15:28:23 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/12 12:38:23 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/Server.hpp"
-#include "../include/Request.hpp"
-#include "../include/Response.hpp"
+#include "../../include/core/Server.hpp"
+#include "../../include/http/Request.hpp"
+#include "../../include/http/Response.hpp"
 
 // Read data from client socket into buffer, handle disconnection/errors
 int Server::readClient(int cfd, std::map<int, Client>::iterator &it) {

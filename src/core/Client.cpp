@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tmarcos <tmarcos@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:58 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/10 12:29:29 by tmarcos          ###   ########.fr       */
+/*   Updated: 2026/02/12 12:38:52 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/Client.hpp"
+#include "../../include/core/Client.hpp"
 
 // Construction
 Client::Client(int fd)

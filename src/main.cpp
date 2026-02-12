@@ -6,12 +6,13 @@
 /*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:41 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/12 12:46:41 by gabrsouz         ###   ########.fr       */
+/*   Updated: 2026/02/12 13:00:35 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 
 #include "../include/core/Server.hpp"
+#include "../include/core/ServerManager.hpp"
 #include "../include/config/ConfigParser.hpp"
 #include "../include/config/LocationConfig.hpp"
 #include <vector>

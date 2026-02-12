@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/05 13:17:35 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/10 14:58:21 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/12 15:55:31 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@ ConfigParser::ConfigParser() {}
 void ConfigParser::error(const std::string& msg) {
 	throw std::runtime_error(msg);
 }
+
+std::vector<ServerConfig> ConfigParser::getServers() const { return servers; }
 
 // Comment: skip
 void ConfigParser::skipComment(const std::string& content, size_t& i) {
@@ -122,13 +124,13 @@ ServerConfig ConfigParser::parseServer(const std::vector<std::string>& tokens, s
 			config.addErrorPages(errorCode, tokens[++i]);
 			if (i + 1 >= tokens.size() || tokens[i + 1] != ";")
 				error("Missing ';' after error_page");
-			i++;
+			++i;
 		} else if (tokens[i] == "location") {
 			if (i + 2 >= tokens.size())
 				error("Invalid location block syntax");
 			LocationConfig location;
 			location.setPath(tokens[++i]);
-			if (tokens[i] != "{")
+			if (tokens[i + 1] != "{")
 				error("Expected '{' after location path");
 			++i; // skip "{"
 			while (i < tokens.size() && tokens[i] != "}") {

@@ -12,7 +12,7 @@ echo "   WEBSERV vs NGINX COMPARISON TESTS"
 echo "=========================================="
 echo ""
 
-WEBSERV_PORT=8080
+WEBSERV_PORT=8083
 NGINX_PORT=8081
 
 # Check if servers are running
@@ -102,11 +102,11 @@ test_403() {
     echo -e "==========================================${NC}"
     
     # Try directory traversal
-    webserv_resp=$(curl -s -w "\n%{http_code}" "http://localhost:$WEBSERV_PORT/../etc/passwd")
+    webserv_resp=$(curl -s -w "\n%{http_code}" "http://localhost:$WEBSERV_PORT/files/../../../etc/passwd")
     webserv_status=$(echo "$webserv_resp" | tail -1)
     webserv_content=$(echo "$webserv_resp" | head -n -1)
     
-    nginx_resp=$(curl -s -w "\n%{http_code}" "http://localhost:$NGINX_PORT/../etc/passwd")
+    nginx_resp=$(curl -s -w "\n%{http_code}" "http://localhost:$NGINX_PORT/files/../../../etc/passwd")
     nginx_status=$(echo "$nginx_resp" | tail -1)
     nginx_content=$(echo "$nginx_resp" | head -n -1)
     

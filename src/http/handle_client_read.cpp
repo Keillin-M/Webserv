@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   handle_client_read.cpp                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/10 11:25:08 by gabrsouz          #+#    #+#             */
-/*   Updated: 2026/02/12 12:38:23 by gabrsouz         ###   ########.fr       */
+/*   Updated: 2026/02/12 15:37:26 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,6 +93,7 @@ void Server::handleClientRead(int cfd, std::map<int, Client>::iterator it) {
 		} std::string rootDir = matchedLocation->getRoot();
 		if (rootDir.empty()) 
 			rootDir = config->getRoot();
+	
 		if (!matchedLocation->isMethodAllowed(request.getMethod())) {
 			handleUnallowedMethod(response, it);
 			return;

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:41 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/12 12:37:53 by gabrsouz         ###   ########.fr       */
+/*   Updated: 2026/02/12 16:19:07 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,8 +154,16 @@ bool Response::isSafePath(const std::string& path) {
 	// Reject paths containing ".."
 	if (path.find("..") != std::string::npos)
 		return false;
-	// Reject absolute paths (must be relative)
+	// Reject paths that don't start with / (invalid HTTP paths)
 	if (!path.empty() && path[0] != '/')
+		return false;
+	// This prevents access to /etc, /usr, /bin, /proc, etc.
+	if (path.find("/etc/") == 0 || path.find("/usr/") == 0 || 
+	    path.find("/bin/") == 0 || path.find("/sbin/") == 0 ||
+	    path.find("/proc/") == 0 || path.find("/sys/") == 0 ||
+	    path.find("/dev/") == 0 || path.find("/root/") == 0 ||
+	    path.find("/home/") == 0 || path.find("/tmp/") == 0 ||
+	    path.find("/var/") == 0 || path.find("/boot/") == 0)
 		return false;
 	return true;
 }
@@ -215,7 +223,7 @@ std::string Response::handleDelete(const std::string& path, const std::string& r
     if (!fileExists(full_path))
         return errorResponse(404, "File not found");
     if (isDirectory(full_path))
-        return errorResponse(400, "Cannot delete directory");
+        return errorResponse(403, "Cannot delete directory");
     if (remove(full_path.c_str()) != 0)
         return errorResponse(500, "Failed to delete");
     status = 200;

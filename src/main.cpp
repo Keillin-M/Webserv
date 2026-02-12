@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:41 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/12 15:36:51 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/12 16:40:28 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,16 +17,23 @@
 #include "../include/config/LocationConfig.hpp"
 #include <vector>
 
-int main() {
+int main(int argc, char **argv) {
 	std::cout << "=== WEBSERV - Multi-Server ===" << std::endl;
 	
+	// Check command-line arguments
+	if (argc != 2) {
+		std::cerr << "Usage: " << argv[0] << " <config_file>" << std::endl;
+		return 1;
+	}
+	
 	std::vector<ServerConfig> configs;
+	std::string configFile = argv[1];
 
 	// Read config file
 	try {
-		std::ifstream file("config/test.conf");
+		std::ifstream file(configFile.c_str());
 		if (!file.is_open()) {
-			std::cerr << "Error: Cannot open config/test.conf" << std::endl;
+			std::cerr << "Error: Cannot open " << configFile << std::endl;
 			return 1;
 		}
 		
@@ -46,29 +53,14 @@ int main() {
 			return 1;
 		}
 		
-		std::cout << "Loaded " << configs.size() << " server(s) from config/test.conf" << std::endl;
+		std::cout << "Loaded " << configs.size() << " server(s) from " << configFile << std::endl;
 		
 	} catch (const std::exception& e) {
 		std::cerr << "Config error: " << e.what() << std::endl;
 		return 1;
 	}
 	
-	// Default location (required for all servers)
-	LocationConfig defaultLocation;
-	defaultLocation.setPath("/");
-	defaultLocation.setRoot("config/www");
-	defaultLocation.setIndexFile("index.html");
-	
-	// Create 3 servers on sequential ports
-	int ports[] = {8080, 8081, 8082};
-	for (int i = 0; i < 3; ++i) {
-		ServerConfig config;
-		config.setPort(ports[i]);
-		config.setRoot("config/www");
-		config.addLocations(defaultLocation);
-		configs.push_back(config);
-	}
-	
+	// Initialize ServerManager with config-parsed servers only
 	ServerManager manager;
 	manager.initialize(configs);
 	manager.run();

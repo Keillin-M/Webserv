@@ -76,9 +76,8 @@ void Server::handleMethod(Request &request, Response &response, const LocationCo
 		checkIfCgi(request, matchedLocation);
 		if (request.getIsCgi()) 
 			httpResponse = response.handleCgi(request.getPath(), rootDir, matchedLocation->getCgiPath());
-		else {
+		else
 			httpResponse = response.handlePost(request.getBody(), uploadDir);
-		}
 	} else if (request.getMethod() == "DELETE") {
 		// Check if path starts with /upload to determine directory
 		std::string path = request.getPath();

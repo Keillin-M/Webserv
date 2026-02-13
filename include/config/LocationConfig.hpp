@@ -21,22 +21,28 @@
 class LocationConfig {
 	private:
 		std::string path;
-		std::vector<std::string> allowedMethods;
+		std::string cgiPath;
 		std::string root;
 		std::string indexFile;
+		std::vector<std::string> allowedMethods;
+		std::vector<std::string> cgiExtensions;
 	
 	public:
 		LocationConfig();
 
 		// Getters
 		std::string getPath() const;
+		std::string getCgiPath() const;
 		std::vector<std::string> getAllowedMethods() const;
+		std::vector<std::string> getCgiExtensions() const;
 		std::string getRoot() const;
 		std::string getIndexFile() const;
 
 		// Setters
 		void setPath(const std::string& path);
+		void setCGIPath(const std::string& cgiPath);
 		void addAllowedMethods(const std::string& method);
+		void setCgiExtensions(const std::string& cgiExtension);
 		void setRoot(const std::string& root);
 		void setIndexFile(const std::string& index);
 

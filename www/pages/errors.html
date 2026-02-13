@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error Pages | Webserv Test Playground</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <!-- Hero Section -->
+    <div class="hero">
+        <img src="../assets/img/hero.svg" alt="Webserv Test Playground" class="hero-image">
+        <h1>Error Page Tests</h1>
+        <p>Test custom error pages with http.cat images</p>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="nav">
+            <a href="../index.html" class="nav-btn">Home</a>
+            <a href="get.html" class="nav-btn">GET Tests</a>
+            <a href="post.html" class="nav-btn">POST Tests</a>
+            <a href="delete.html" class="nav-btn">DELETE Tests</a>
+            <a href="redirect.html" class="nav-btn">Redirections</a>
+            <a href="errors.html" class="nav-btn">Error Pages</a>
+            <a href="about.html" class="nav-btn">About</a>
+        </nav>
+
+        <!-- Info Card -->
+        <div class="card">
+            <h2>About Error Pages</h2>
+            <p>Custom error pages provide a better user experience when things go wrong. Your webserv should serve custom HTML pages for common HTTP error codes.</p>
+        </div>
+
+        <!-- Common Error Codes -->
+        <div class="card">
+            <h2>Test Error Pages</h2>
+            <p>Click to view each error page directly:</p>
+
+            <div class="form-group">
+                <label for="error-base-url">Base URL</label>
+                <input type="text" id="error-base-url" value="http://localhost:8080">
+            </div>
+
+            <div class="test-grid">
+                <div class="test-card">
+                    <h3>400 Bad Request</h3>
+                    <p>Malformed request syntax</p>
+                    <button class="btn btn-danger" onclick="testErrorPage('400')">View 400</button>
+                </div>
+
+                <div class="test-card">
+                    <h3>403 Forbidden</h3>
+                    <p>Access denied</p>
+                    <button class="btn btn-danger" onclick="testErrorPage('403')">View 403</button>
+                </div>
+
+                <div class="test-card">
+                    <h3>404 Not Found</h3>
+                    <p>Resource doesn't exist</p>
+                    <button class="btn btn-danger" onclick="testErrorPage('404')">View 404</button>
+                </div>
+
+                <div class="test-card">
+                    <h3>405 Method Not Allowed</h3>
+                    <p>Method not supported</p>
+                    <button class="btn btn-danger" onclick="testErrorPage('405')">View 405</button>
+                </div>
+
+                <div class="test-card">
+                    <h3>413 Payload Too Large</h3>
+                    <p>Request body too big</p>
+                    <button class="btn btn-danger" onclick="testErrorPage('413')">View 413</button>
+                </div>
+
+                <div class="test-card">
+                    <h3>500 Internal Server Error</h3>
+                    <p>Server error</p>
+                    <button class="btn btn-danger" onclick="testErrorPage('500')">View 500</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trigger Errors -->
+        <div class="card">
+            <h2>Trigger Errors Naturally</h2>
+            <p>These actions should trigger error responses from your server:</p>
+
+            <div style="margin-top: 20px; display: grid; gap: 15px;">
+                <div style="background: var(--bg-tertiary); padding: 15px; border-radius: 8px;">
+                    <h3 style="margin: 0 0 10px 0; color: var(--accent-purple);">Trigger 404</h3>
+                    <p style="margin: 0 0 10px 0; color: var(--text-secondary);">Request a non-existent file</p>
+                    <button class="btn btn-info" onclick="document.getElementById('custom-error-path').value = '/this-does-not-exist.html'; document.getElementById('trigger-error-form').requestSubmit();">Trigger 404</button>
+                </div>
+
+                <div style="background: var(--bg-tertiary); padding: 15px; border-radius: 8px;">
+                    <h3 style="margin: 0 0 10px 0; color: var(--accent-purple);">Trigger 405</h3>
+                    <p style="margin: 0 0 10px 0; color: var(--text-secondary);">Try POST on a GET-only location</p>
+                    <button class="btn btn-info" onclick="triggerMethodNotAllowed();">Trigger 405</button>
+                </div>
+
+                <div style="background: var(--bg-tertiary); padding: 15px; border-radius: 8px;">
+                    <h3 style="margin: 0 0 10px 0; color: var(--accent-purple);">Trigger 413</h3>
+                    <p style="margin: 0 0 10px 0; color: var(--text-secondary);">Upload a file larger than server's limit</p>
+                    <a href="post.html" class="btn btn-info">Go to POST Tests</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Error Trigger -->
+        <div class="card">
+            <h2>Custom Error Test</h2>
+            <p>Try to trigger an error by requesting a specific path:</p>
+            
+            <form id="trigger-error-form" onsubmit="event.preventDefault(); triggerCustomError();">
+                <div class="form-group">
+                    <label for="custom-error-path">Path (should trigger error)</label>
+                    <input type="text" id="custom-error-path" value="/nonexistent.html" placeholder="/nonexistent.html" required>
+                </div>
+
+                <button type="submit" class="btn">Test Path</button>
+            </form>
+        </div>
+
+        <!-- Error Code Reference -->
+        <div class="card">
+            <h2>HTTP Error Code Reference</h2>
+            <div style="margin-top: 15px; color: var(--text-secondary); line-height: 1.8;">
+                <p><strong style="color: var(--accent-purple);">4xx Client Errors:</strong> Problem with the request</p>
+                <ul style="margin-left: 20px; margin-bottom: 15px;">
+                    <li><code>400 Bad Request</code> - Malformed syntax</li>
+                    <li><code>403 Forbidden</code> - Access denied</li>
+                    <li><code>404 Not Found</code> - Resource doesn't exist</li>
+                    <li><code>405 Method Not Allowed</code> - HTTP method not supported</li>
+                    <li><code>413 Payload Too Large</code> - Request body exceeds limit</li>
+                </ul>
+
+                <p><strong style="color: var(--error);">5xx Server Errors:</strong> Problem with the server</p>
+                <ul style="margin-left: 20px;">
+                    <li><code>500 Internal Server Error</code> - Generic server error</li>
+                    <li><code>501 Not Implemented</code> - Feature not supported</li>
+                    <li><code>502 Bad Gateway</code> - Invalid upstream response</li>
+                    <li><code>503 Service Unavailable</code> - Server temporarily unavailable</li>
+                    <li><code>504 Gateway Timeout</code> - Upstream timeout</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Response Display -->
+        <div id="response-container" class="response-container"></div>
+    </div>
+
+    <script src="../assets/js/app.js"></script>
+    <script>
+        function triggerCustomError() {
+            const baseUrl = document.getElementById('error-base-url').value;
+            const path = document.getElementById('custom-error-path').value;
+            const url = baseUrl + path;
+            makeRequest('GET', url);
+        }
+
+        function triggerMethodNotAllowed() {
+            const baseUrl = document.getElementById('error-base-url').value;
+            // Try to POST to index.html which should only accept GET
+            const url = baseUrl + '/index.html';
+            makeRequest('POST', url);
+        }
+    </script>
+</body>
+</html>

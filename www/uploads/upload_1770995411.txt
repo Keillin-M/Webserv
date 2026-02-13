@@ -1,0 +1,11 @@
+------WebKitFormBoundaryRWvYbXfIRH3YIxdh
+Content-Disposition: form-data; name="file"; filename="myfile.txt"
+Content-Type: text/plain
+
+This is my custom text file content.
+You can write anything here!
+
+Line 1
+Line 2
+Line 3
+------WebKitFormBoundaryRWvYbXfIRH3YIxdh--

@@ -197,6 +197,8 @@ std::string Response::handleGet(const std::string& path, const std::string& root
 
 // Handle CGI requests (stub implementation)
 std::string Response::handleCgi(const std::string& path, const std::string& rootDir, const std::string& cgiPath) {
+    (void)path;
+    (void)rootDir;
     // Basic validation: CGI interpreter must be configured
     if (cgiPath.empty())
         return errorResponse(500, "CGI interpreter not configured");

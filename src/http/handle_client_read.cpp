@@ -46,7 +46,7 @@ void checkIfCgi(Request &request, const LocationConfig* matchedLocation) {
 	std::string reqPath = request.getPath();
 	size_t dotPos = reqPath.find_last_of('.');
 	std::string ext = (dotPos != std::string::npos) ? reqPath.substr(dotPos) : "";
-	std::vector<std::string> cgiExts = matchedLocation->getCgiExtensions();
+	std::vector<std::string> cgiExts = matchedLocation->getCGIExtensions();
 	for (size_t i = 0; i < cgiExts.size(); ++i) { //check if there is cgi extension
 		if (cgiExts[i] == ext) {
 			request.setIsCgi(true);
@@ -69,7 +69,7 @@ void Server::handleMethod(Request &request, Response &response, const LocationCo
 	if (request.getMethod() == "GET") {
 		checkIfCgi(request, matchedLocation);
 		if (request.getIsCgi()) 
-			httpResponse = response.handleCgi(request.getPath(), rootDir, matchedLocation->getCgiPath());
+			httpResponse = response.handleCgi(request.getPath(), rootDir, matchedLocation->getCGIPath());
 		else
 			httpResponse = response.handleGet(request.getPath(), rootDir, indexFile);
 	} else if (request.getMethod() == "POST") {

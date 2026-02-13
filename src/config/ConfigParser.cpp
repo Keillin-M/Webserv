@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/05 13:17:35 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/12 15:55:31 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/13 12:14:28 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,6 +154,20 @@ ServerConfig ConfigParser::parseServer(const std::vector<std::string>& tokens, s
 					location.setIndexFile(tokens[++i]);
 					if (i + 1 >= tokens.size() || tokens[i + 1] != ";")
 						error("Missing ';' after index file in location");
+					++i; // skip ";"
+				} else if (tokens[i] == "cgi_path") {
+					if (i + 1 >= tokens.size())
+						error("Missing cgi_path value");
+					location.setCGIPath(tokens[++i]);
+					if (i + 1 >= tokens.size() || tokens[i + 1] != ";")
+						error("Missing ';' after cgi_path");
+					++i; // skip ";"
+				} else if (tokens[i] == "cgi_extension") {
+					++i;
+					while (i < tokens.size() && tokens[i] != ";") {
+						location.setCGIExtensions(tokens[i]);
+						++i;
+					}
 					++i; // skip ";"
 				} else
 					++i; // skip unknown token

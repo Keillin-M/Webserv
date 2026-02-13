@@ -41,6 +41,7 @@ class Response {
 		bool fileExists(const std::string& filepath);
 		bool isDirectory(const std::string& path);
 		bool isSafePath(const std::string& path);
+		void parseHeaderLines(const std::string headers_part);
 	
 	public:
 		Response();

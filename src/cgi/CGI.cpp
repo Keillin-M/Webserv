@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 14:40:53 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/13 15:03:55 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/13 15:47:30 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,37 +20,21 @@ CGI::~CGI() {}
 
 std::string CGI::getQuery(const std::string& path) {
     size_t pos = path.find('?');
-    if (pos == std::string::npos) {
-        return "";
-    }
-    
-    std::string query;
-    for (size_t i = pos + 1; i < path.length(); ++i) {
-        query += path[i];
-    }
-    return query;
+    return (pos != std::string::npos) ? path.substr(pos + 1) : "";
 }
 
 std::string CGI::getPathInfo(const std::string& requestPath, const std::string& scriptName) {
 	size_t queryPos = requestPath.find('?');
+	std::string pathOnly = (queryPos != std::string::npos) 
+		? requestPath.substr(0, queryPos) 
+		: requestPath;
 	
-	std::string pathOnly;
-	    
-    size_t endPos = (queryPos != std::string::npos) ? queryPos : requestPath.length();
-    for (size_t i = 0; i < endPos; ++i) {
-        pathOnly += requestPath[i];
-    }
-    
-    // Check if starts with scriptName
-    if (pathOnly.find(scriptName) == 0) {
-        std::string pathInfo;
-        for (size_t i = scriptName.length(); i < pathOnly.length(); ++i) {
-            pathInfo += pathOnly[i];
-        }
-        return pathInfo;
-    }
-    
-    return "";
+	// Check if starts with scriptName
+	if (pathOnly.find(scriptName) == 0) {
+		return pathOnly.substr(scriptName.length());
+	}
+	
+	return "";
 }
 
 char** CGI::createEnvArray() {

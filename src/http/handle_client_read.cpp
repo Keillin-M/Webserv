@@ -13,6 +13,7 @@
 #include "../../include/core/Server.hpp"
 #include "../../include/http/Request.hpp"
 #include "../../include/http/Response.hpp"
+#include "../../include/cgi/CGI.hpp"
 
 // Read data from client socket into buffer, handle disconnection/errors
 int Server::readClient(int cfd, std::map<int, Client>::iterator &it) {
@@ -69,13 +70,13 @@ void Server::handleMethod(Request &request, Response &response, const LocationCo
 	if (request.getMethod() == "GET") {
 		checkIfCgi(request, matchedLocation);
 		if (request.getIsCgi()) 
-			httpResponse = response.handleCgi(request.getPath(), rootDir, matchedLocation->getCGIPath());
+			httpResponse = response.handleCgi(request, *config, rootDir, matchedLocation->getCGIPath());
 		else
 			httpResponse = response.handleGet(request.getPath(), rootDir, indexFile);
 	} else if (request.getMethod() == "POST") {
 		checkIfCgi(request, matchedLocation);
 		if (request.getIsCgi()) 
-			httpResponse = response.handleCgi(request.getPath(), rootDir, matchedLocation->getCGIPath());
+			httpResponse = response.handleCgi(request, *config, rootDir, matchedLocation->getCGIPath());
 		else
 			httpResponse = response.handlePost(request.getBody(), uploadDir);
 	} else if (request.getMethod() == "DELETE") {

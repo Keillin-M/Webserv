@@ -29,6 +29,7 @@ class CGI {
 	private:
 		std::map<std::string, std::string> env;
 
+
 		void buildEnvironment(const Request& req, const ServerConfig& server, const std::string& scriptPath);
 		std::string getQuery(const std::string& path);
 		std::string getPathInfo(const std::string& requestPath, const std::string& scriptName);

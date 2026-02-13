@@ -11,6 +11,8 @@
 /* ************************************************************************** */
 
 #include "../../include/http/Response.hpp"
+#include "../../include/cgi/CGI.hpp"
+#include "../../include/http/Request.hpp"
 
 Response::Response() {}
 
@@ -195,15 +197,90 @@ std::string Response::handleGet(const std::string& path, const std::string& root
     return buildHttpResponse();
 }
 
-// Handle CGI requests (stub implementation)
-std::string Response::handleCgi(const std::string& path, const std::string& rootDir, const std::string& cgiPath) {
-    (void)path;
-    (void)rootDir;
+// Handle CGI requests: execute CGI and parse its output
+std::string Response::handleCgi(const Request& request, const ServerConfig& serverCfg, const std::string& rootDir, const std::string& cgiPath) {
+    CGI cgi;
+
     // Basic validation: CGI interpreter must be configured
     if (cgiPath.empty())
         return errorResponse(500, "CGI interpreter not configured");
-    // CGI execution not implemented yet — return 501 for now
-    return errorResponse(501, "CGI Not Implemented");
+    const std::string path = request.getPath();
+    if (!isSafePath(path))
+        return errorResponse(403, "Forbidden");
+    // Build script full path (strip query part)
+    std::string scriptPath = rootDir;
+    if (!scriptPath.empty() && scriptPath[scriptPath.size() - 1] != '/')
+        scriptPath += '/';
+    size_t qpos = path.find('?');
+    std::string path_no_query = (qpos != std::string::npos) ? path.substr(0, qpos) : path;
+    if (!path_no_query.empty() && path_no_query[0] == '/')
+        scriptPath += path_no_query.substr(1);
+    else
+        scriptPath += path_no_query;
+
+    if (!fileExists(scriptPath))
+        return errorResponse(404, "Not Found");
+
+    // Execute CGI — returns raw output (headers + body)
+    std::string raw;
+    try {
+        raw = cgi.execute(request, serverCfg, scriptPath, cgiPath);
+    } catch (...) {
+        return errorResponse(500, "CGI execution failed");
+    }
+
+    // parse raw into headers and body
+    size_t sep = raw.find("\r\n\r\n");
+    size_t seplen = 4;
+    if (sep == std::string::npos) {
+        sep = raw.find("\n\n");
+        seplen = 2;
+    }
+    std::string headers_part;
+    std::string body_part;
+    if (sep != std::string::npos) {
+        headers_part = raw.substr(0, sep);
+        body_part = raw.substr(sep + seplen);
+    } else {
+        // no headers found, treat entire output as body
+        body_part = raw;
+    }
+
+    // parse header lines
+    std::istringstream hs(headers_part);
+    std::string line;
+    bool status_set = false;
+    int parsed_status = 0;
+    while (std::getline(hs, line)) {
+        // strip \r if present (avoid using string::back/pop_back for C++98)
+        if (!line.empty() && line[line.size() - 1] == '\r') line.erase(line.size() - 1, 1);
+        if (line.empty()) continue;
+        size_t pos = line.find(":" );
+        if (pos == std::string::npos) continue;
+        std::string key = line.substr(0, pos);
+        std::string value = line.substr(pos + 1);
+        // trim leading spaces
+        size_t start = value.find_first_not_of(" \t");
+        if (start != std::string::npos) value = value.substr(start);
+        // handle Status header specially
+        if (key == "Status") {
+            std::istringstream iss(value);
+            int code = 200;
+            iss >> code;
+            parsed_status = code;
+            status_set = true;
+        } else {
+            headers[key] = value;
+        }
+    }
+
+    if (!status_set) parsed_status = 200;
+    this->body = body_part;
+    this->status = parsed_status;
+    if (headers.find("Content-Type") == headers.end())
+        headers["Content-Type"] = "text/plain";
+
+    return buildHttpResponse();
 }
 
 // Handle POST request: save uploaded data to file

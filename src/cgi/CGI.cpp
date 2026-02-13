@@ -91,8 +91,7 @@ static std::string toUpperUnderscore(const std::string& str) {
     return result;
 }
 
-void CGI::buildEnvironment(const Request& req, const ServerConfig& server, 
-    const std::string& scriptPath) {
+void CGI::buildEnvironment(const Request& req, const ServerConfig& server, const std::string& scriptPath) {
     // Required CGI meta-variables
     env["REQUEST_METHOD"] = req.getMethod();
     env["QUERY_STRING"] = getQuery(req.getPath());
@@ -126,8 +125,7 @@ void CGI::buildEnvironment(const Request& req, const ServerConfig& server,
     }
 }
 
-std::string CGI::execute(const Request& req, const ServerConfig& server, 
-	const std::string& scriptPath, const std::string& interpreterPath) {
+std::string CGI::execute(const Request& req, const ServerConfig& server, const std::string& scriptPath, const std::string& interpreterPath) {
 	int pipeIn[2], pipeOut[2];
 	pipe(pipeIn); // Sending body to script
 	pipe(pipeOut); // Reading script output

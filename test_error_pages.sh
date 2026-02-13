@@ -111,6 +111,11 @@ test_403() {
     nginx_content=$(echo "$nginx_resp" | head -n -1)
     
     compare_response "Directory traversal attempt" "$webserv_status" "$nginx_status" "$webserv_content" "$nginx_content"
+    
+    # Note: Webserv returns 403 (enhanced security), nginx returns 404
+    if [ "$webserv_status" = "403" ] && [ "$nginx_status" = "404" ]; then
+        echo -e "${GREEN}  ℹ Enhanced security: webserv blocks system directory access${NC}"
+    fi
 }
 
 # Test 4: 400 - Bad Request

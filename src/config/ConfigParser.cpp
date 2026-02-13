@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/05 13:17:35 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/13 12:14:28 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/13 12:27:47 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,6 +93,65 @@ std::vector<std::string> ConfigParser::tokenize(const std::string& content) {
 	return tokens;
 }
 
+LocationConfig ConfigParser::parseLocation(const std::vector<std::string>& tokens, size_t& i) {
+	LocationConfig location;
+	
+	if (i + 2 >= tokens.size())
+		error("Invalid location block syntax");
+	
+	location.setPath(tokens[++i]);
+	
+	if (tokens[i + 1] != "{")
+		error("Expected '{' after location path");
+	++i; // skip "{"
+	
+	while (i < tokens.size() && tokens[i] != "}") {
+		if (tokens[i] == "root") {
+			if (i + 1 >= tokens.size())
+				error("Missing root path after 'root' in location");
+			location.setRoot(tokens[++i]);
+			if (i + 1 >= tokens.size() || tokens[i + 1] != ";")
+				error("Missing ';' after root path in location");
+			++i; //skip ";"
+		} else if (tokens[i] == "allowed_methods") {
+			++i;
+			while (i < tokens.size() && tokens[i] != ";") {
+				location.addAllowedMethods(tokens[i]);
+				++i;
+			}
+			++i; // skip ";"
+		} else if (tokens[i] == "index") {
+			if (i + 1 >= tokens.size())
+				error("Missing index file after 'index' in location");
+			location.setIndexFile(tokens[++i]);
+			if (i + 1 >= tokens.size() || tokens[i + 1] != ";")
+				error("Missing ';' after index file in location");
+			++i; // skip ";"
+		} else if (tokens[i] == "cgi_path") {
+			if (i + 1 >= tokens.size())
+				error("Missing cgi_path value");
+			location.setCGIPath(tokens[++i]);
+			if (i + 1 >= tokens.size() || tokens[i + 1] != ";")
+				error("Missing ';' after cgi_path");
+			++i; // skip ";"
+		} else if (tokens[i] == "cgi_extension") {
+			++i;
+			while (i < tokens.size() && tokens[i] != ";") {
+				location.setCGIExtensions(tokens[i]);
+				++i;
+			}
+			++i; // skip ";"
+		} else
+			++i; // skip unknown token
+	}
+	
+	if (i >= tokens.size())
+		error("Missing '}' for location block");
+	++i; //skip "}"
+	
+	return location;
+}
+
 ServerConfig ConfigParser::parseServer(const std::vector<std::string>& tokens, size_t& i) {
 	ServerConfig config;
 	 if (i + 1 >= tokens.size())
@@ -126,56 +185,7 @@ ServerConfig ConfigParser::parseServer(const std::vector<std::string>& tokens, s
 				error("Missing ';' after error_page");
 			++i;
 		} else if (tokens[i] == "location") {
-			if (i + 2 >= tokens.size())
-				error("Invalid location block syntax");
-			LocationConfig location;
-			location.setPath(tokens[++i]);
-			if (tokens[i + 1] != "{")
-				error("Expected '{' after location path");
-			++i; // skip "{"
-			while (i < tokens.size() && tokens[i] != "}") {
-				if (tokens[i] == "root") {
-					if (i + 1 >= tokens.size())
-						error("Missing root path after 'root' in location");
-					location.setRoot(tokens[++i]);
-					if (i + 1 >= tokens.size() || tokens[i + 1] != ";")
-						error("Missing ';' after root path in location");
-					++i; //skip ";"
-				} else if (tokens[i] == "allowed_methods") {
-					++i;
-					while (i < tokens.size() && tokens[i] != ";") {
-						location.addAllowedMethods(tokens[i]);
-						++i;
-					}
-					++i; // skip ";"
-				} else if (tokens[i] == "index") {
-					if (i + 1 >= tokens.size())
-						error("Missing index file after 'index' in location");
-					location.setIndexFile(tokens[++i]);
-					if (i + 1 >= tokens.size() || tokens[i + 1] != ";")
-						error("Missing ';' after index file in location");
-					++i; // skip ";"
-				} else if (tokens[i] == "cgi_path") {
-					if (i + 1 >= tokens.size())
-						error("Missing cgi_path value");
-					location.setCGIPath(tokens[++i]);
-					if (i + 1 >= tokens.size() || tokens[i + 1] != ";")
-						error("Missing ';' after cgi_path");
-					++i; // skip ";"
-				} else if (tokens[i] == "cgi_extension") {
-					++i;
-					while (i < tokens.size() && tokens[i] != ";") {
-						location.setCGIExtensions(tokens[i]);
-						++i;
-					}
-					++i; // skip ";"
-				} else
-					++i; // skip unknown token
-			}
-			if (i >= tokens.size())
-				error("Missing '}' for location block");
-			++i; //skip "}"
-			config.addLocations(location);
+			config.addLocations(parseLocation(tokens, i));
 		} else
 			++i;
 	}

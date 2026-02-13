@@ -187,6 +187,15 @@ std::string Response::handleGet(const std::string& path, const std::string& root
     return buildHttpResponse();
 }
 
+// Handle CGI requests (stub implementation)
+std::string Response::handleCgi(const std::string& path, const std::string& rootDir, const std::string& cgiPath) {
+    // Basic validation: CGI interpreter must be configured
+    if (cgiPath.empty())
+        return errorResponse(500, "CGI interpreter not configured");
+    // CGI execution not implemented yet — return 501 for now
+    return errorResponse(501, "CGI Not Implemented");
+}
+
 // Handle POST request: save uploaded data to file
 std::string Response::handlePost(const std::string& requestBody, const std::string& uploadDir) {
 	if (requestBody.empty())

@@ -25,10 +25,10 @@ class Request {
 		std::string version;
 		std::map<std::string, std::string> headers;
 		std::string body;
+		bool isCgi;
 	
 	public:
-		Request();	
-		
+
 		// Getters
 		std::string getMethod() const;
 		std::string getPath() const;
@@ -36,7 +36,11 @@ class Request {
 		std::string getHeader(const std::string& name) const;
 		std::map<std::string, std::string> getHeaders() const;
 		std::string getBody() const;
+		bool Request::getIsCgi() const;
 		
+		// Setters
+		void Request::setIsCgi(bool is_Cgi);
+
 		// Main parsing function - full HTTP request
 		void parseRequest(const std::string& rawRequest);
 

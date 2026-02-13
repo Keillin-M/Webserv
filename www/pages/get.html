@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GET Tests | Webserv Test Playground</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <!-- Hero Section -->
+    <div class="hero">
+        <img src="../assets/img/hero.svg" alt="Webserv Test Playground" class="hero-image">
+        <h1>GET Request Tests</h1>
+        <p>Test static file serving and directory listing</p>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="nav">
+            <a href="../index.html" class="nav-btn">Home</a>
+            <a href="get.html" class="nav-btn">GET Tests</a>
+            <a href="post.html" class="nav-btn">POST Tests</a>
+            <a href="delete.html" class="nav-btn">DELETE Tests</a>
+            <a href="redirect.html" class="nav-btn">Redirections</a>
+            <a href="errors.html" class="nav-btn">Error Pages</a>
+            <a href="about.html" class="nav-btn">About</a>
+        </nav>
+
+        <!-- Custom GET Request -->
+        <div class="card">
+            <h2>Custom GET Request</h2>
+            <p>Test any path on your server</p>
+            
+            <form id="get-form">
+                <div class="form-group">
+                    <label for="base-url">Base URL</label>
+                    <input type="text" id="base-url" name="baseUrl" value="http://localhost:8080" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="path">Path (starting with /)</label>
+                    <input type="text" id="path" name="path" value="/" placeholder="/index.html" required>
+                </div>
+
+                <button type="submit" class="btn">Send GET Request</button>
+            </form>
+        </div>
+
+        <!-- Test Cases -->
+        <div class="card">
+            <h2>✅ Test: File Exists → 200 OK</h2>
+            <p>Server should open the file and return 200 with content</p>
+            <div class="test-grid">
+                <div class="test-card">
+                    <h3>HTML File</h3>
+                    <p><code>/index.html</code></p>
+                    <button class="btn btn-success" onclick="testPath('/index.html')">Test</button>
+                </div>
+                <div class="test-card">
+                    <h3>CSS File</h3>
+                    <p><code>/assets/css/style.css</code></p>
+                    <button class="btn btn-success" onclick="testPath('/assets/css/style.css')">Test</button>
+                </div>
+                <div class="test-card">
+                    <h3>JS File</h3>
+                    <p><code>/assets/js/app.js</code></p>
+                    <button class="btn btn-success" onclick="testPath('/assets/js/app.js')">Test</button>
+                </div>
+                <div class="test-card">
+                    <h3>SVG Image</h3>
+                    <p><code>/assets/img/hero.svg</code></p>
+                    <button class="btn btn-success" onclick="testPath('/assets/img/hero.svg')">Test</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>❌ Test: File Not Found → 404</h2>
+            <p>Server should return 404 and serve custom error page</p>
+            <div class="test-grid">
+                <div class="test-card">
+                    <h3>Non-existent File</h3>
+                    <p><code>/notfound.html</code></p>
+                    <button class="btn btn-danger" onclick="testPath('/notfound.html')">Test 404</button>
+                </div>
+                <div class="test-card">
+                    <h3>Wrong Path</h3>
+                    <p><code>/fake/file.txt</code></p>
+                    <button class="btn btn-danger" onclick="testPath('/fake/file.txt')">Test 404</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📁 Test: Directory Access</h2>
+            <p>Behavior depends on server config (index file or autoindex)</p>
+            <div class="test-grid">
+                <div class="test-card">
+                    <h3>Root Directory</h3>
+                    <p><code>/</code> → should serve index.html</p>
+                    <button class="btn btn-info" onclick="testPath('/')">Test</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Response Display -->
+        <div id="response-container" class="response-container"></div>
+    </div>
+
+    <script src="../assets/js/app.js"></script>
+    <script>
+        function testPath(path) {
+            document.getElementById('path').value = path;
+            document.getElementById('get-form').requestSubmit();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webserv | 42 Project</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <!-- Hero Section -->
+    <div class="hero">
+        <img src="assets/img/hero.svg" alt="Webserv" class="hero-image">
+        <h1>Webserv</h1>
+        <p>HTTP testing environment made by tmarcos, gabrsouza and kmaeda - 42 berlin students</p>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="nav">
+            <a href="index.html" class="nav-btn">Home</a>
+            <a href="pages/get.html" class="nav-btn">GET Tests</a>
+            <a href="pages/post.html" class="nav-btn">POST Tests</a>
+            <a href="pages/delete.html" class="nav-btn">DELETE Tests</a>
+            <a href="pages/redirect.html" class="nav-btn">Redirections</a>
+            <a href="pages/errors.html" class="nav-btn">Error Pages</a>
+            <a href="pages/about.html" class="nav-btn">About</a>
+        </nav>
+
+        <!-- Welcome Section -->
+        <div class="card">
+            <h2>Welcome to Webserv</h2>
+            <p>This testing environment allows you to validate all HTTP functionality of your 42 Webserv (C++98) implementation.</p>
+            
+            <h3>Features</h3>
+            <ul style="color: var(--text-secondary); margin-left: 20px;">
+                <li><strong style="color: var(--accent-green);">GET Requests:</strong> Test static file serving, directory listing (autoindex), and custom paths</li>
+                <li><strong style="color: var(--accent-green);">POST Requests:</strong> Send text data and upload files with full response inspection</li>
+                <li><strong style="color: var(--accent-green);">DELETE Requests:</strong> Test file deletion capabilities</li>
+                <li><strong style="color: var(--accent-green);">Redirections:</strong> Test HTTP 301, 302, 307, and 308 redirects</li>
+                <li><strong style="color: var(--accent-green);">Error Pages:</strong> View custom error pages with http.cat images (400, 403, 404, 405, 413, 500)</li>
+                <li><strong style="color: var(--accent-green);">Response Inspector:</strong> See status codes, headers, body, and request duration</li>
+            </ul>
+        </div>
+
+        <!-- Quick Start Guide -->
+        <div class="card">
+            <h2>Quick Start Guide</h2>
+            
+            <h3>1. Configure Your Webserv</h3>
+            <p>Make sure your server configuration includes:</p>
+            <ul style="color: var(--text-secondary); margin-left: 20px; margin-bottom: 15px;">
+                <li>Port: <code>8080</code> (or update the base URL in test pages)</li>
+                <li>Root directory pointing to this <code>www/</code> folder</li>
+                <li>Upload directory: <code>/uploads/</code></li>
+                <li>Error pages configured to <code>/errors/</code></li>
+            </ul>
+
+            <h3>2. Start Your Server</h3>
+            <code>./webserv config/default.conf</code>
+
+            <h3>3. Open in Browser</h3>
+            <p>Navigate to: <code>http://localhost:8080</code></p>
+
+            <h3>4. Run Tests</h3>
+            <p>Use the navigation menu to access different test categories and validate your implementation.</p>
+        </div>
+
+        <!-- Test Categories -->
+        <div class="card">
+            <h2>Test Categories</h2>
+            <div class="test-grid">
+                <div class="test-card">
+                    <h3>GET</h3>
+                    <p>Test static file serving, directory listing, and custom paths</p>
+                    <a href="pages/get.html" class="btn">Start Testing</a>
+                </div>
+
+                <div class="test-card">
+                    <h3>POST</h3>
+                    <p>Test text submission and file upload with response inspection</p>
+                    <a href="pages/post.html" class="btn">Start Testing</a>
+                </div>
+
+                <div class="test-card">
+                    <h3>DELETE</h3>
+                    <p>Test file deletion by path with confirmation</p>
+                    <a href="pages/delete.html" class="btn">Start Testing</a>
+                </div>
+
+                <div class="test-card">
+                    <h3>Redirections</h3>
+                    <p>Test HTTP 301, 302, 307, and 308 redirect responses</p>
+                    <a href="pages/redirect.html" class="btn">Start Testing</a>
+                </div>
+
+                <div class="test-card">
+                    <h3>Error Pages</h3>
+                    <p>View custom error pages with http.cat images</p>
+                    <a href="pages/errors.html" class="btn">Start Testing</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="assets/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+------WebKitFormBoundary3aA8RM93JlrlfOol
+Content-Disposition: form-data; name="file"; filename="myfile.txt"
+Content-Type: text/plain
+
+IU
+------WebKitFormBoundary3aA8RM93JlrlfOol--

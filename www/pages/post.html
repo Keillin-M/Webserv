@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POST Tests | Webserv Test Playground</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <!-- Hero Section -->
+    <div class="hero">
+        <img src="../assets/img/hero.svg" alt="Webserv Test Playground" class="hero-image">
+        <h1>POST Request Tests</h1>
+        <p>Test text submission and file uploads</p>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="nav">
+            <a href="../index.html" class="nav-btn">Home</a>
+            <a href="get.html" class="nav-btn">GET Tests</a>
+            <a href="post.html" class="nav-btn">POST Tests</a>
+            <a href="delete.html" class="nav-btn">DELETE Tests</a>
+            <a href="redirect.html" class="nav-btn">Redirections</a>
+            <a href="errors.html" class="nav-btn">Error Pages</a>
+            <a href="about.html" class="nav-btn">About</a>
+        </nav>
+
+        <!-- POST Text Data -->
+        <div class="card">
+            <h2>POST Text Data</h2>
+            <p>Send text content with custom Content-Type header</p>
+            
+            <form id="post-text-form">
+                <div class="form-group">
+                    <label for="text-base-url">Base URL</label>
+                    <input type="text" id="text-base-url" name="baseUrl" value="http://localhost:8080" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="text-path">Path (endpoint to POST to)</label>
+                    <input type="text" id="text-path" name="path" value="/uploads/test.txt" placeholder="/uploads/test.txt" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="content-type">Content-Type</label>
+                    <select id="content-type" name="contentType">
+                        <option value="text/plain">text/plain</option>
+                        <option value="text/html">text/html</option>
+                        <option value="application/json">application/json</option>
+                        <option value="application/x-www-form-urlencoded">application/x-www-form-urlencoded</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="text-content">Text Content</label>
+                    <textarea id="text-content" name="textContent" placeholder="Enter your text content here..." required>Hello from Webserv!
+This is a test POST request with text data.
+
+Testing multi-line content...
+Line 1
+Line 2
+Line 3</textarea>
+                </div>
+
+                <button type="submit" class="btn">Send POST Request</button>
+            </form>
+        </div>
+
+        <!-- Create Text File Upload -->
+        <div class="card">
+            <h2>Create & Upload Text File</h2>
+            <p>Write content and create a .txt file on your server</p>
+            
+            <form id="create-file-form" onsubmit="event.preventDefault(); createAndUploadTextFile();">
+                <div class="form-group">
+                    <label for="create-base-url">Base URL</label>
+                    <input type="text" id="create-base-url" value="http://localhost:8080" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="filename">Filename (e.g., myfile.txt)</label>
+                    <input type="text" id="filename" value="myfile.txt" placeholder="myfile.txt" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="file-content">File Content</label>
+                    <textarea id="file-content" placeholder="Write your content here..." required>This is my custom text file content.
+You can write anything here!
+
+Line 1
+Line 2
+Line 3</textarea>
+                </div>
+
+                <button type="submit" class="btn btn-success">Create & Upload File</button>
+            </form>
+        </div>
+
+        <!-- Expected Results -->
+        <div class="card">
+            <h2>Expected Results</h2>
+            <ul style="color: var(--text-secondary); margin-left: 20px;">
+                <li><strong style="color: var(--accent-green);">200 OK / 201 Created:</strong> Content successfully posted or file uploaded</li>
+                <li><strong style="color: var(--error);">403 Forbidden:</strong> POST not allowed on this path</li>
+                <li><strong style="color: var(--error);">405 Method Not Allowed:</strong> POST method not configured</li>
+                <li><strong style="color: var(--error);">413 Payload Too Large:</strong> Content exceeds size limit</li>
+                <li><strong style="color: var(--error);">500 Internal Server Error:</strong> Server error processing request</li>
+            </ul>
+        </div>
+
+        <!-- Response Display -->
+        <div id="response-container" class="response-container"></div>
+    </div>
+
+    <script src="../assets/js/app.js"></script>
+    <script>
+        function quickTextTest(type) {
+            const form = document.getElementById('post-text-form');
+            const pathInput = document.getElementById('text-path');
+            const contentInput = document.getElementById('text-content');
+            const contentTypeSelect = document.getElementById('content-type');
+
+            switch(type) {
+                case 'plain':
+                    pathInput.value = '/uploads/test.txt';
+                    contentTypeSelect.value = 'text/plain';
+                    contentInput.value = 'Hello! This is a plain text POST test.\nTesting line breaks and special chars: @#$%^&*()';
+                    break;
+                case 'json':
+                    pathInput.value = '/uploads/data.json';
+                    contentTypeSelect.value = 'application/json';
+                    contentInput.value = '{\n  "message": "Hello from JSON",\n  "timestamp": "' + new Date().toISOString() + '",\n  "test": true,\n  "number": 42\n}';
+                    break;
+                case 'html':
+                    pathInput.value = '/uploads/page.html';
+                    contentTypeSelect.value = 'text/html';
+                    contentInput.value = '<!DOCTYPE html>\n<html>\n<head><title>Test</title></head>\n<body>\n  <h1>Posted HTML</h1>\n  <p>This is a test HTML page.</p>\n</body>\n</html>';
+                    break;
+                case 'form':
+                    pathInput.value = '/uploads/form-data.txt';
+                    contentTypeSelect.value = 'application/x-www-form-urlencoded';
+                    contentInput.value = 'name=John+Doe&email=john%40example.com&message=Hello+World&submit=true';
+                    break;
+            }
+
+            form.requestSubmit();
+        }
+
+        function createAndUploadTextFile() {
+            const baseUrl = document.getElementById('create-base-url').value;
+            const filename = document.getElementById('filename').value;
+            const content = document.getElementById('file-content').value;
+
+            // Create a Blob from the text content
+            const blob = new Blob([content], { type: 'text/plain' });
+            
+            // Create FormData and append the blob as a file
+            const formData = new FormData();
+            formData.append('file', blob, filename);
+
+            // Build the URL
+            const path = '/uploads/';
+            const url = baseUrl + path;
+
+            // Send the request
+            makeRequest('POST', url, {
+                body: formData
+            });
+        }
+    </script>
+</body>
+</html>

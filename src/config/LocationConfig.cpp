@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/06 14:18:49 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/09 18:14:20 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/13 12:18:03 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,16 +35,16 @@ bool LocationConfig::isMethodAllowed(const std::string& method) const {
 	return std::find(allowedMethods.begin(), allowedMethods.end(), method) != allowedMethods.end();
 }
 
-std::string LocationConfig::getCgiPath() const { return cgiPath; }
+std::string LocationConfig::getCGIPath() const { return CGIPath; }
 
-std::vector<std::string> LocationConfig::getCgiExtensions() const {return cgiExtensions; }
+std::vector<std::string> LocationConfig::getCGIExtensions() const {return CGIExtensions; }
 
-void LocationConfig::setCGIPath(const std::string& cgiPath) {
-
+void LocationConfig::setCGIExtensions(const std::string& CGIExtension) {
+	this->CGIExtensions.push_back(CGIExtension);
 }
 
-void LocationConfig::setCgiExtensions(const std::string& cgiExtension) {
-
+void LocationConfig::setCGIPath(const std::string& CGIPath) {
+	this->CGIPath = CGIPath;
 }
 
 void LocationConfig::validate() {

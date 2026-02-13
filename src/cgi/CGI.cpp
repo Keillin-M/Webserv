@@ -6,12 +6,13 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 14:40:53 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/13 15:47:30 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/13 16:46:19 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/cgi/CGI.hpp"
 #include "../../include/http/Request.hpp"
+#include "../../include/http/Response.hpp"
 #include "../../include/config/ServerConfig.hpp" 
 
 CGI::CGI() {}
@@ -111,49 +112,51 @@ void CGI::buildEnvironment(const Request& req, const ServerConfig& server, const
 
 std::string CGI::execute(const Request& req, const ServerConfig& server, const std::string& scriptPath, const std::string& interpreterPath) {
 	int pipeIn[2], pipeOut[2];
-	pipe(pipeIn); // Sending body to script
-	pipe(pipeOut); // Reading script output
+	Response response;
+	if (pipe(pipeIn) == -1 || pipe(pipeOut) == -1)
+	 	return (response.errorResponse(500, "CGI: pipe() failed"));
 
 	buildEnvironment(req, server, scriptPath);
 	char** envp = createEnvArray();	
 	
-	// Create args array for execve
-	char* args[3];
+	char* args[3]; // Create args array for execve
 	args[0] = const_cast<char*>(interpreterPath.c_str());
 	args[1] = const_cast<char*>(scriptPath.c_str());
 	args[2] = NULL;
 	
 	pid_t pid = fork();
+	if (pid < 0) {
+		freeEnvArray(envp);
+		close(pipeIn[0]); close(pipeIn[1]);
+		close(pipeOut[0]); close(pipeOut[1]);
+		return (response.errorResponse(500, "CGI: fork() failed"));	
+	}
 	if (pid == 0) {
-		// Redirect stdin/stdout
-		dup2(pipeIn[0], STDIN_FILENO);
-		dup2(pipeOut[1], STDOUT_FILENO);
-		
-		// Close unused ends
+		if (dup2(pipeIn[0], STDIN_FILENO) == -1 || dup2(pipeOut[1], STDOUT_FILENO) == -1)
+			exit(1);
 		close(pipeIn[1]);
 		close(pipeOut[0]);
-		
-		// Execute script
 		execve(interpreterPath.c_str(), args, envp);
 		exit(1);
 	}
-	
 	close(pipeIn[0]);
 	close(pipeOut[1]);
-	
 	write(pipeIn[1], req.getBody().c_str(), req.getBody().length());
 	close(pipeIn[1]);
 
 	std::string output;
 	char buffer[4096];
 	ssize_t bytesRead;
-	
-	while ((bytesRead = read(pipeOut[0], buffer, sizeof(buffer))) > 0) {
+	while ((bytesRead = read(pipeOut[0], buffer, sizeof(buffer))) > 0)
 		output.append(buffer, bytesRead);
-	}
 	close(pipeOut[0]);
 
-	waitpid(pid, NULL, 0);
+	int status = 0;
+	waitpid(pid, &status, 0);
 	freeEnvArray(envp);
+	if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
+		return (response.errorResponse(500, "CGI: script failed to execute properly"));
+	if (WIFSIGNALED(status))
+		return (response.errorResponse(504, "CGI: script killed (timeout or signal)"));
 	return output;
 }

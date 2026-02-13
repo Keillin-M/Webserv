@@ -18,6 +18,7 @@
 #include <iostream>
 
 class ServerConfig;
+class LocationConfig;
 
 class ConfigParser {
 	private:
@@ -30,6 +31,7 @@ class ConfigParser {
 		void handleSpecialChar(char c, std::string& token, std::vector<std::string>& tokens);
 		void error(const std::string& msg);
 		ServerConfig parseServer(const std::vector<std::string>& tokens, size_t& i);
+		LocationConfig parseLocation(const std::vector<std::string>& tokens, size_t& i);
 
 	public:
 		ConfigParser();

@@ -13,6 +13,7 @@
 #include "../../include/core/Server.hpp"
 #include "../../include/http/Request.hpp"
 #include "../../include/http/Response.hpp"
+#include "../../include/cgi/CGI.hpp"
 
 // Read data from client socket into buffer, handle disconnection/errors
 int Server::readClient(int cfd, std::map<int, Client>::iterator &it) {
@@ -40,6 +41,21 @@ void Server::handleUnallowedMethod(Response &response, std::map<int, Client>::it
 	it->second.clearReadBuffer();
 }
 
+void checkIfCgi(Request &request, const LocationConfig* matchedLocation) {
+	// Reset and detect if this request should be handled by CGI based on extension
+	request.setIsCgi(false);
+	std::string reqPath = request.getPath();
+	size_t dotPos = reqPath.find_last_of('.');
+	std::string ext = (dotPos != std::string::npos) ? reqPath.substr(dotPos) : "";
+	std::vector<std::string> cgiExts = matchedLocation->getCGIExtensions();
+	for (size_t i = 0; i < cgiExts.size(); ++i) { //check if there is cgi extension
+		if (cgiExts[i] == ext) {
+			request.setIsCgi(true);
+			break;
+		}
+	}
+}
+
 // Route request to appropriate handler based on HTTP method (GET/POST/DELETE)
 void Server::handleMethod(Request &request, Response &response, const LocationConfig* matchedLocation, std::map<int, Client>::iterator &it) {
 	std::string httpResponse;
@@ -51,11 +67,18 @@ void Server::handleMethod(Request &request, Response &response, const LocationCo
 	
 	// Set error pages for Response object
 	response.setErrorPages(config->getErrorPages(), config->getRoot());
-	
 	if (request.getMethod() == "GET") {
-		httpResponse = response.handleGet(request.getPath(), rootDir, indexFile);
+		checkIfCgi(request, matchedLocation);
+		if (request.getIsCgi()) 
+			httpResponse = response.handleCgi(request, *config, rootDir, matchedLocation->getCGIPath());
+		else
+			httpResponse = response.handleGet(request.getPath(), rootDir, indexFile);
 	} else if (request.getMethod() == "POST") {
-		httpResponse = response.handlePost(request.getBody(), uploadDir);
+		checkIfCgi(request, matchedLocation);
+		if (request.getIsCgi()) 
+			httpResponse = response.handleCgi(request, *config, rootDir, matchedLocation->getCGIPath());
+		else
+			httpResponse = response.handlePost(request.getBody(), uploadDir);
 	} else if (request.getMethod() == "DELETE") {
 		// Check if path starts with /upload to determine directory
 		std::string path = request.getPath();

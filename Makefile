@@ -15,6 +15,7 @@ SRC = src/main.cpp \
 	src/http/Request.cpp \
 	src/http/Response.cpp \
 	src/http/handle_client_read.cpp \
+	src/http/handle_methods.cpp \
 	src/http/handle_CGI.cpp 
 
 OBJ = $(SRC:src/%.cpp=obj/%.o)

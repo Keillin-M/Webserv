@@ -35,6 +35,18 @@ bool LocationConfig::isMethodAllowed(const std::string& method) const {
 	return std::find(allowedMethods.begin(), allowedMethods.end(), method) != allowedMethods.end();
 }
 
+std::string LocationConfig::getCgiPath() const { return cgiPath; }
+
+std::vector<std::string> LocationConfig::getCgiExtensions() const {return cgiExtensions; }
+
+void LocationConfig::setCGIPath(const std::string& cgiPath) {
+
+}
+
+void LocationConfig::setCgiExtensions(const std::string& cgiExtension) {
+
+}
+
 void LocationConfig::validate() {
 	// Fallback to default
 	if (allowedMethods.empty())

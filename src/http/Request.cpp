@@ -13,7 +13,14 @@
 #include "../../include/http/Request.hpp"
 #include <sstream>
 
-Request::Request() {}
+Request::Request() : isCgi(false) {}
+
+void Request::setIsCgi(bool is_Cgi) { 
+	isCgi = is_Cgi;
+	return;
+}
+
+bool Request::getIsCgi() const { return isCgi; }
 
 // Parse initial request line: METHOD, PATH, VERSION CRLF
 void Request::setParseVariables(const std::vector<std::string>& parse) {

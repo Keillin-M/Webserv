@@ -44,6 +44,7 @@ class Response {
 		void setErrorPages(const std::map<int, std::string>& pages, const std::string& root);
 
 		std::string handleGet(const std::string& path, const std::string& rootDir, const std::string& indexFile);
+		std::string handleCgi(const std::string& path, const std::string& rootDir, const std::string& cgiPath);
 		std::string handlePost(const std::string& requestBody, const std::string& uploadDir);
 		std::string handleDelete(const std::string& path, const std::string& rootDir);
 		std::string errorResponse(int statusCode, const std::string& message, const std::string& customErrorPage = "");

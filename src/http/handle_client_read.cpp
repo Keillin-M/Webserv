@@ -75,7 +75,7 @@ void Server::handleMethod(Request &request, Response &response, const LocationCo
 	} else if (request.getMethod() == "POST") {
 		checkIfCgi(request, matchedLocation);
 		if (request.getIsCgi()) 
-			httpResponse = response.handleCgi(request.getPath(), rootDir, matchedLocation->getCgiPath());
+			httpResponse = response.handleCgi(request.getPath(), rootDir, matchedLocation->getCGIPath());
 		else
 			httpResponse = response.handlePost(request.getBody(), uploadDir);
 	} else if (request.getMethod() == "DELETE") {

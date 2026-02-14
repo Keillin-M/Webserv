@@ -117,6 +117,15 @@ void Server::handleClientRead(int cfd, std::map<int, Client>::iterator it) {
 		if (rootDir.empty()) 
 			rootDir = config->getRoot();
 	
+		// Check if method is implemented (before checking if allowed)
+		std::string method = request.getMethod();
+		if (method != "GET" && method != "POST" && method != "DELETE") {
+			response.setErrorPages(config->getErrorPages(), config->getRoot());
+			it->second.appendWrite(response.errorResponse(501, "Not Implemented"));
+			it->second.clearReadBuffer();
+			return;
+		}
+
 		if (!matchedLocation->isMethodAllowed(request.getMethod())) {
 			handleUnallowedMethod(response, it);
 			return;

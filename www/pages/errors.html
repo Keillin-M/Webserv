@@ -31,140 +31,163 @@
         <div class="card">
             <h2>About Error Pages</h2>
             <p>Custom error pages provide a better user experience when things go wrong. Your webserv should serve custom HTML pages for common HTTP error codes.</p>
+            
+            <div style="margin-top: 20px; color: var(--text-secondary); line-height: 1.8;">
+                <p><strong style="color: var(--accent-green);">Testable via Browser:</strong></p>
+                <ul style="margin-left: 20px; margin-bottom: 15px;">
+                    <li><code>400</code> - Bad Request (empty POST body)</li>
+                    <li><code>403</code> - Forbidden (directory traversal, delete directory)</li>
+                    <li><code>404</code> - Not Found (file doesn't exist)</li>
+                    <li><code>405</code> - Method Not Allowed (wrong method for route)</li>
+                    <li><code>501</code> - Not Implemented (unknown HTTP method)</li>
+                </ul>
+
+                <p><strong style="color: var(--text-secondary);">Implemented but not testable via Browser:</strong></p>
+                <ul style="margin-left: 20px;">
+                    <li><code>500</code> - Internal Server Error (server-side failures)</li>
+                    <li><code>505</code> - HTTP Version Not Supported (browser always sends HTTP/1.1)</li>
+                </ul>
+            </div>
         </div>
 
-        <!-- Common Error Codes -->
+        <!-- Trigger Errors - Main Section -->
         <div class="card">
-            <h2>Test Error Pages</h2>
-            <p>Click to view each error page directly:</p>
+            <h2>Trigger Errors</h2>
 
-            <div class="form-group">
-                <label for="error-base-url">Base URL</label>
-                <input type="text" id="error-base-url" value="http://localhost:8080">
-            </div>
-
-            <div class="test-grid">
+            <div class="test-grid" style="margin-top: 15px;">
+                <!-- 400 Bad Request -->
                 <div class="test-card">
                     <h3>400 Bad Request</h3>
-                    <p>Malformed request syntax</p>
-                    <button class="btn btn-danger" onclick="testErrorPage('400')">View 400</button>
+                    <p>Send POST with empty body</p>
+                    <button class="btn btn-danger" onclick="trigger400()">Trigger 400</button>
                 </div>
 
+                <!-- 403 Forbidden -->
                 <div class="test-card">
                     <h3>403 Forbidden</h3>
-                    <p>Access denied</p>
-                    <button class="btn btn-danger" onclick="testErrorPage('403')">View 403</button>
+                    <p>Directory traversal attempt</p>
+                    <button class="btn btn-danger" onclick="trigger403()">Trigger 403</button>
                 </div>
 
+                <!-- 404 Not Found -->
                 <div class="test-card">
                     <h3>404 Not Found</h3>
-                    <p>Resource doesn't exist</p>
-                    <button class="btn btn-danger" onclick="testErrorPage('404')">View 404</button>
+                    <p>Request non-existent file</p>
+                    <button class="btn btn-danger" onclick="trigger404()">Trigger 404</button>
                 </div>
 
+                <!-- 405 Method Not Allowed -->
                 <div class="test-card">
                     <h3>405 Method Not Allowed</h3>
-                    <p>Method not supported</p>
-                    <button class="btn btn-danger" onclick="testErrorPage('405')">View 405</button>
+                    <p>POST on /pages/ (GET only)</p>
+                    <button class="btn btn-danger" onclick="trigger405()">Trigger 405</button>
                 </div>
 
+                <!-- 501 Not Implemented -->
                 <div class="test-card">
-                    <h3>413 Payload Too Large</h3>
-                    <p>Request body too big</p>
-                    <button class="btn btn-danger" onclick="testErrorPage('413')">View 413</button>
+                    <h3>501 Not Implemented</h3>
+                    <p>Use PATCH method</p>
+                    <button class="btn btn-danger" onclick="trigger501()">Trigger 501</button>
                 </div>
-
-                <div class="test-card">
-                    <h3>500 Internal Server Error</h3>
-                    <p>Server error</p>
-                    <button class="btn btn-danger" onclick="testErrorPage('500')">View 500</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Trigger Errors -->
-        <div class="card">
-            <h2>Trigger Errors Naturally</h2>
-            <p>These actions should trigger error responses from your server:</p>
-
-            <div style="margin-top: 20px; display: grid; gap: 15px;">
-                <div style="background: var(--bg-tertiary); padding: 15px; border-radius: 8px;">
-                    <h3 style="margin: 0 0 10px 0; color: var(--accent-purple);">Trigger 404</h3>
-                    <p style="margin: 0 0 10px 0; color: var(--text-secondary);">Request a non-existent file</p>
-                    <button class="btn btn-info" onclick="document.getElementById('custom-error-path').value = '/this-does-not-exist.html'; document.getElementById('trigger-error-form').requestSubmit();">Trigger 404</button>
-                </div>
-
-                <div style="background: var(--bg-tertiary); padding: 15px; border-radius: 8px;">
-                    <h3 style="margin: 0 0 10px 0; color: var(--accent-purple);">Trigger 405</h3>
-                    <p style="margin: 0 0 10px 0; color: var(--text-secondary);">Try POST on a GET-only location</p>
-                    <button class="btn btn-info" onclick="triggerMethodNotAllowed();">Trigger 405</button>
-                </div>
-
-                <div style="background: var(--bg-tertiary); padding: 15px; border-radius: 8px;">
-                    <h3 style="margin: 0 0 10px 0; color: var(--accent-purple);">Trigger 413</h3>
-                    <p style="margin: 0 0 10px 0; color: var(--text-secondary);">Upload a file larger than server's limit</p>
-                    <a href="post.html" class="btn btn-info">Go to POST Tests</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Custom Error Trigger -->
-        <div class="card">
-            <h2>Custom Error Test</h2>
-            <p>Try to trigger an error by requesting a specific path:</p>
-            
-            <form id="trigger-error-form" onsubmit="event.preventDefault(); triggerCustomError();">
-                <div class="form-group">
-                    <label for="custom-error-path">Path (should trigger error)</label>
-                    <input type="text" id="custom-error-path" value="/nonexistent.html" placeholder="/nonexistent.html" required>
-                </div>
-
-                <button type="submit" class="btn">Test Path</button>
-            </form>
-        </div>
-
-        <!-- Error Code Reference -->
-        <div class="card">
-            <h2>HTTP Error Code Reference</h2>
-            <div style="margin-top: 15px; color: var(--text-secondary); line-height: 1.8;">
-                <p><strong style="color: var(--accent-purple);">4xx Client Errors:</strong> Problem with the request</p>
-                <ul style="margin-left: 20px; margin-bottom: 15px;">
-                    <li><code>400 Bad Request</code> - Malformed syntax</li>
-                    <li><code>403 Forbidden</code> - Access denied</li>
-                    <li><code>404 Not Found</code> - Resource doesn't exist</li>
-                    <li><code>405 Method Not Allowed</code> - HTTP method not supported</li>
-                    <li><code>413 Payload Too Large</code> - Request body exceeds limit</li>
-                </ul>
-
-                <p><strong style="color: var(--error);">5xx Server Errors:</strong> Problem with the server</p>
-                <ul style="margin-left: 20px;">
-                    <li><code>500 Internal Server Error</code> - Generic server error</li>
-                    <li><code>501 Not Implemented</code> - Feature not supported</li>
-                    <li><code>502 Bad Gateway</code> - Invalid upstream response</li>
-                    <li><code>503 Service Unavailable</code> - Server temporarily unavailable</li>
-                    <li><code>504 Gateway Timeout</code> - Upstream timeout</li>
-                </ul>
             </div>
         </div>
 
         <!-- Response Display -->
         <div id="response-container" class="response-container"></div>
+
+        <!-- Error Page Preview -->
+        <div id="error-preview" class="card" style="display: none; text-align: center;">
+            <img id="error-cat" src="" alt="Error Cat" style="max-width: 100%; border-radius: 8px;">
+        </div>
     </div>
 
     <script src="../assets/js/app.js"></script>
     <script>
-        function triggerCustomError() {
-            const baseUrl = document.getElementById('error-base-url').value;
-            const path = document.getElementById('custom-error-path').value;
-            const url = baseUrl + path;
-            makeRequest('GET', url);
+        function getBaseUrl() {
+            return window.location.origin;
         }
 
-        function triggerMethodNotAllowed() {
-            const baseUrl = document.getElementById('error-base-url').value;
-            // Try to POST to index.html which should only accept GET
-            const url = baseUrl + '/index.html';
-            makeRequest('POST', url);
+        function triggerError(method, path, body = null) {
+            const url = getBaseUrl() + path;
+            const startTime = performance.now();
+            
+            const options = { method: method };
+            if (body !== null) {
+                options.headers = { 'Content-Type': 'text/plain' };
+                options.body = body;
+            }
+
+            fetch(url, options)
+                .then(response => {
+                    const duration = Math.round(performance.now() - startTime);
+                    return response.text().then(html => ({ response, html, duration }));
+                })
+                .then(({ response, html, duration }) => {
+                    // Display response info
+                    const container = document.getElementById('response-container');
+                    const statusClass = response.status >= 400 ? 'status-error' : 'status-success';
+                    container.innerHTML = `
+                        <h3>Response Details</h3>
+                        <div class="response-header">
+                            <div class="response-item">
+                                <label>Method</label>
+                                <div class="value">${method}</div>
+                            </div>
+                            <div class="response-item ${statusClass}">
+                                <label>Status Code</label>
+                                <div class="value">${response.status} ${response.statusText}</div>
+                            </div>
+                            <div class="response-item">
+                                <label>Duration</label>
+                                <div class="value">${duration} ms</div>
+                            </div>
+                            <div class="response-item">
+                                <label>URL</label>
+                                <div class="value" style="word-break: break-all;">${url}</div>
+                            </div>
+                        </div>
+                    `;
+                    container.classList.add('show');
+
+                    // Display cat image based on status code
+                    const preview = document.getElementById('error-preview');
+                    const catImg = document.getElementById('error-cat');
+                    catImg.src = 'https://http.cat/' + response.status;
+                    catImg.alt = response.status + ' ' + response.statusText;
+                    preview.style.display = 'block';
+
+                    container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                })
+                .catch(error => {
+                    const container = document.getElementById('response-container');
+                    container.innerHTML = `<h3>Error</h3><p style="color: var(--error);">${error.message}</p>`;
+                    container.classList.add('show');
+                });
+        }
+
+        // 400 Bad Request - Empty POST body
+        function trigger400() {
+            triggerError('POST', '/uploads/', '');
+        }
+
+        // 403 Forbidden - Directory traversal
+        function trigger403() {
+            triggerError('GET', '/../../../etc/passwd');
+        }
+
+        // 404 Not Found - Non-existent file
+        function trigger404() {
+            triggerError('GET', '/this-file-does-not-exist-12345.html');
+        }
+
+        // 405 Method Not Allowed - POST on GET-only location
+        function trigger405() {
+            triggerError('POST', '/pages/get.html', 'test');
+        }
+
+        // 501 Not Implemented - Unknown HTTP method
+        function trigger501() {
+            triggerError('PATCH', '/index.html');
         }
     </script>
 </body>

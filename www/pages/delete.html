@@ -27,85 +27,125 @@
             <a href="about.html" class="nav-btn">About</a>
         </nav>
 
-        <!-- Warning -->
-        <div class="card" style="border-color: var(--error);">
-            <h2 style="color: var(--error);">⚠️ Warning</h2>
-            <p style="color: var(--text-primary);">DELETE operations will permanently remove files from your server. Always confirm before deleting.</p>
+        <!-- Test Paths Reference -->
+        <div class="card">
+            <h2>Test Paths</h2>
+            <p>Copy these paths to test different DELETE scenarios:</p>
+
+            <div class="test-grid" style="margin-top: 15px;">
+                <div class="test-card">
+                    <h3 style="color: var(--accent-green);">200 OK</h3>
+                    <p>Delete existing file</p>
+                    <code style="font-size: 0.85rem;">/uploads/test.txt</code>
+                </div>
+
+                <div class="test-card">
+                    <h3 style="color: var(--error);">404 Not Found</h3>
+                    <p>File doesn't exist</p>
+                    <code style="font-size: 0.85rem;">/uploads/non-exists.txt</code>
+                </div>
+
+                <div class="test-card">
+                    <h3 style="color: var(--error);">403 Forbidden</h3>
+                    <p>Cannot delete directory</p>
+                    <code style="font-size: 0.85rem;">/uploads/</code>
+                </div>
+
+                <div class="test-card">
+                    <h3 style="color: var(--error);">405 Not Allowed</h3>
+                    <p>DELETE not allowed on /pages/</p>
+                    <code style="font-size: 0.85rem;">/pages/about.html</code>
+                </div>
+            </div>
         </div>
 
         <!-- DELETE Request Form -->
         <div class="card">
-            <h2>DELETE File by Path</h2>
-            <p>Delete a specific file from your server</p>
+            <h2>DELETE File</h2>
             
-            <form id="delete-form">
-                <div class="form-group">
-                    <label for="delete-base-url">Base URL</label>
-                    <input type="text" id="delete-base-url" name="baseUrl" value="http://localhost:8080" required>
-                </div>
-
+            <form onsubmit="event.preventDefault(); deleteFile();">
                 <div class="form-group">
                     <label for="delete-path">File Path (to delete)</label>
-                    <input type="text" id="delete-path" name="path" value="/uploads/test.txt" placeholder="/uploads/filename.txt" required>
+                    <input type="text" id="delete-path" value="/uploads/test.txt" placeholder="/uploads/filename.txt" required>
                 </div>
 
                 <button type="submit" class="btn btn-danger">Delete File</button>
-                <p style="color: var(--text-secondary); margin-top: 10px; font-size: 0.9rem;">
-                    ℹ️ You will be asked to confirm before deletion
-                </p>
             </form>
-        </div>
-
-        <!-- Testing Workflow -->
-        <div class="card">
-            <h2>Recommended Testing Workflow</h2>
-            <ol style="color: var(--text-secondary); margin-left: 20px; line-height: 1.8;">
-                <li>
-                    <strong style="color: var(--accent-green);">Step 1: Create Test File</strong><br>
-                    Go to <a href="post.html" style="color: var(--accent-blue);">POST Tests</a> and upload a test file
-                </li>
-                <li>
-                    <strong style="color: var(--accent-green);">Step 2: Verify File Exists</strong><br>
-                    Go to <a href="get.html" style="color: var(--accent-blue);">GET Tests</a> and check that the file is accessible
-                </li>
-                <li>
-                    <strong style="color: var(--accent-green);">Step 3: Delete File</strong><br>
-                    Use the form above to delete the file (note the path from Step 2)
-                </li>
-                <li>
-                    <strong style="color: var(--accent-green);">Step 4: Verify Deletion</strong><br>
-                    Try to GET the file again - should return 404 Not Found
-                </li>
-            </ol>
-        </div>
-
-        <!-- Expected Results -->
-        <div class="card">
-            <h2>Expected Results</h2>
-            <ul style="color: var(--text-secondary); margin-left: 20px;">
-                <li><strong style="color: var(--accent-green);">200 OK / 204 No Content:</strong> File successfully deleted</li>
-                <li><strong style="color: var(--error);">403 Forbidden:</strong> DELETE not allowed on this path</li>
-                <li><strong style="color: var(--error);">404 Not Found:</strong> File doesn't exist (already deleted or never existed)</li>
-                <li><strong style="color: var(--error);">405 Method Not Allowed:</strong> DELETE method not configured for this location</li>
-                <li><strong style="color: var(--error);">500 Internal Server Error:</strong> Server error during deletion</li>
-            </ul>
-        </div>
-
-        <!-- Security Notes -->
-        <div class="card">
-            <h2>Security Considerations</h2>
-            <ul style="color: var(--text-secondary); margin-left: 20px;">
-                <li>Your server should <strong style="color: var(--accent-purple);">validate paths</strong> to prevent deletion of system files</li>
-                <li>DELETE should only be allowed in <strong style="color: var(--accent-purple);">designated directories</strong> (e.g., /uploads/)</li>
-                <li>Consider implementing <strong style="color: var(--accent-purple);">authentication</strong> for DELETE operations</li>
-                <li>Test that <strong style="color: var(--accent-purple);">directory traversal attacks</strong> (../) are properly blocked</li>
-            </ul>
         </div>
 
         <!-- Response Display -->
         <div id="response-container" class="response-container"></div>
+
+        <!-- Error Cat Image -->
+        <div id="error-preview" class="card" style="display: none; text-align: center;">
+            <img id="error-cat" src="" alt="Error Cat" style="max-width: 100%; border-radius: 8px;">
+        </div>
     </div>
 
-    <script src="../assets/js/app.js"></script>
+    <script>
+        function deleteFile() {
+            const path = document.getElementById('delete-path').value;
+            const url = window.location.origin + path;
+            
+            if (!confirm('Are you sure you want to DELETE: ' + path + '?')) {
+                return;
+            }
+
+            const startTime = performance.now();
+
+            fetch(url, { method: 'DELETE' })
+                .then(response => {
+                    const duration = Math.round(performance.now() - startTime);
+                    return response.text().then(body => ({ response, body, duration }));
+                })
+                .then(({ response, body, duration }) => {
+                    const container = document.getElementById('response-container');
+                    const statusClass = response.status >= 200 && response.status < 300 ? 'status-success' : 'status-error';
+                    
+                    container.innerHTML = `
+                        <h3>Response Details</h3>
+                        <div class="response-header">
+                            <div class="response-item">
+                                <label>Method</label>
+                                <div class="value">DELETE</div>
+                            </div>
+                            <div class="response-item ${statusClass}">
+                                <label>Status Code</label>
+                                <div class="value">${response.status} ${response.statusText}</div>
+                            </div>
+                            <div class="response-item">
+                                <label>Duration</label>
+                                <div class="value">${duration} ms</div>
+                            </div>
+                            <div class="response-item">
+                                <label>URL</label>
+                                <div class="value" style="word-break: break-all;">${url}</div>
+                            </div>
+                        </div>
+                    `;
+                    container.classList.add('show');
+
+                    // Show cat image for errors
+                    const preview = document.getElementById('error-preview');
+                    const catImg = document.getElementById('error-cat');
+                    
+                    if (response.status >= 400) {
+                        catImg.src = 'https://http.cat/' + response.status;
+                        catImg.alt = response.status + ' ' + response.statusText;
+                        preview.style.display = 'block';
+                    } else {
+                        preview.style.display = 'none';
+                    }
+
+                    container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                })
+                .catch(error => {
+                    const container = document.getElementById('response-container');
+                    container.innerHTML = `<h3>Error</h3><p style="color: var(--error);">${error.message}</p>`;
+                    container.classList.add('show');
+                    document.getElementById('error-preview').style.display = 'none';
+                });
+        }
+    </script>
 </body>
 </html>

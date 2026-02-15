@@ -1,6 +1,0 @@
-------WebKitFormBoundaryeaTKzCGApQ8g2qw9
-Content-Disposition: form-data; name="file"; filename="myfile.txt"
-Content-Type: text/plain
-
-sasaSas
-------WebKitFormBoundaryeaTKzCGApQ8g2qw9--

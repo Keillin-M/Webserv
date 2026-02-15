@@ -1,6 +1,0 @@
-------WebKitFormBoundaryxoL5KZnM0Ahrf3vm
-Content-Disposition: form-data; name="file"; filename="myfile.txt"
-Content-Type: text/plain
-
-vagabundos
-------WebKitFormBoundaryxoL5KZnM0Ahrf3vm--

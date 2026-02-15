@@ -80,10 +80,8 @@ void Server::handleMethod(Request &request, Response &response, const LocationCo
 		else
 			httpResponse = response.handlePost(request.getBody(), uploadDir);
 	} else if (request.getMethod() == "DELETE") {
-		// Check if path starts with /upload to determine directory
-		std::string path = request.getPath();
-		std::string deleteDir = (path.find("upload") != std::string::npos) ? uploadDir : rootDir;
-		httpResponse = response.handleDelete(path, deleteDir);
+		// Use rootDir for DELETE - path already contains full path from root
+		httpResponse = response.handleDelete(request.getPath(), rootDir);
 	} else {
 		response.setErrorPages(config->getErrorPages(), config->getRoot());
 		httpResponse = response.errorResponse(501, "Not Implemented");

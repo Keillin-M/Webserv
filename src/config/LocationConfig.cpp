@@ -3,15 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   LocationConfig.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/06 14:18:49 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/13 12:18:03 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/16 15:05:36 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/config/LocationConfig.hpp"
-LocationConfig::LocationConfig() {}
+LocationConfig::LocationConfig() : redirectCode(0) {}
 
 std::string LocationConfig::getPath() const { return path; }
 
@@ -47,6 +47,19 @@ void LocationConfig::setCGIPath(const std::string& CGIPath) {
 	this->CGIPath = CGIPath;
 }
 
+std::string LocationConfig::getRedirectUrl() const { return redirectUrl; }
+
+int LocationConfig::getRedirectCode() const { return redirectCode; }
+
+void LocationConfig::setRedirect(int code, const std::string& url) {
+	redirectCode = code;
+	redirectUrl = url;
+}
+
+bool LocationConfig::hasRedirection() const {
+	return redirectCode > 0 && !redirectUrl.empty();
+}
+
 void LocationConfig::validate() {
 	// Fallback to default
 	if (allowedMethods.empty())
@@ -55,4 +68,9 @@ void LocationConfig::validate() {
 		indexFile = "index.html";
 	if (path.empty())
 		throw std::runtime_error("Location path cannot be empty");
+	// Validate redirection codes
+	if (redirectCode != 0 && (redirectCode < 300 || redirectCode >= 400))
+		throw std::runtime_error("Invalid redirection code. Must be 3xx");
+	if (redirectCode > 0 && redirectUrl.empty())
+		throw std::runtime_error("Redirection URL cannot be empty");
 }

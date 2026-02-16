@@ -141,6 +141,15 @@ LocationConfig ConfigParser::parseLocation(const std::vector<std::string>& token
 				++i;
 			}
 			++i; // skip ";"
+		} else if (tokens[i] == "return") {
+			if (i + 2 >= tokens.size())
+				error("Missing redirection code and URL after 'return'");
+			int code = std::atoi(tokens[++i].c_str());
+			std::string url = tokens[++i];
+			location.setRedirect(code, url);
+			if (i + 1 >= tokens.size() || tokens[i + 1] != ";")
+				error("Missing ';' after return directive");
+			++i; // skip ";"
 		} else
 			++i; // skip unknown token
 	}

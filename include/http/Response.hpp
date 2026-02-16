@@ -52,6 +52,7 @@ class Response {
 		std::string handleCgi(const Request& request, const ServerConfig& serverCfg, const std::string& rootDir, const std::string& cgiPath);
 		std::string handlePost(const std::string& requestBody, const std::string& uploadDir);
 		std::string handleDelete(const std::string& path, const std::string& rootDir);
+		std::string redirectResponse(int code, const std::string& location);
 		std::string errorResponse(int statusCode, const std::string& message, const std::string& customErrorPage = "");
 };
 

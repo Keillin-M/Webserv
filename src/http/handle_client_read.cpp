@@ -45,6 +45,12 @@ void checkIfCgi(Request &request, const LocationConfig* matchedLocation) {
 	// Reset and detect if this request should be handled by CGI based on extension
 	request.setIsCgi(false);
 	std::string reqPath = request.getPath();
+	
+	// Strip query string before detecting extension
+	size_t queryPos = reqPath.find('?');
+	if (queryPos != std::string::npos)
+		reqPath = reqPath.substr(0, queryPos);
+	
 	size_t dotPos = reqPath.find_last_of('.');
 	std::string ext = (dotPos != std::string::npos) ? reqPath.substr(dotPos) : "";
 	std::vector<std::string> cgiExts = matchedLocation->getCGIExtensions();

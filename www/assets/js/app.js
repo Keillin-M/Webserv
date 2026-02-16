@@ -190,12 +190,11 @@ function handlePostRequest(event) {
     const path = form.path.value;
     const baseUrl = form.baseUrl ? form.baseUrl.value : 'http://localhost:8080';
     const textContent = form.textContent ? form.textContent.value : '';
-    const contentType = form.contentType ? form.contentType.value : 'text/plain';
     const url = baseUrl + path;
 
     makeRequest('POST', url, {
         headers: {
-            'Content-Type': contentType
+            'Content-Type': 'text/plain'
         },
         body: textContent
     });

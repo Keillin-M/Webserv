@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>413 Payload Too Large | Webserv</title>
+    <title>505 HTTP Version Not Supported | Webserv</title>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body>
     <div class="container">
         <div class="error-page">
-            <h1>413</h1>
-            <h2>Payload Too Large</h2>
-            <img src="https://http.cat/413" alt="413 Payload Too Large Cat" onerror="this.style.display='none'">
-            <p>The request body is larger than the server is willing to process.</p>
+            <h1>505</h1>
+            <h2>HTTP Version Not Supported</h2>
+            <img src="https://http.cat/505" alt="505 HTTP Version Not Supported Cat" onerror="this.style.display='none'">
+            <p>The server does not support the HTTP protocol version used in the request.</p>
             <p style="color: var(--text-secondary); font-size: 0.9rem;">
-                Try uploading a smaller file or reducing the size of your request.
+                This server only supports HTTP/1.0 and HTTP/1.1.
             </p>
             <a href="/" class="btn">Go to Home</a>
             <a href="/pages/errors.html" class="btn btn-info">Test Other Errors</a>

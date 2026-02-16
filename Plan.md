@@ -117,3 +117,6 @@
 3. GET with query string → CGI
 
 This gets you to "CGI works" fast, then refine from there
+
+-> pkill -f ./webserv
+After recompiling, the running server process still uses the old code in memory, so we must kill it (pkill) and start a new process to load the updated executable

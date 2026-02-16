@@ -80,10 +80,8 @@ void Server::handleMethod(Request &request, Response &response, const LocationCo
 		else
 			httpResponse = response.handlePost(request.getBody(), uploadDir);
 	} else if (request.getMethod() == "DELETE") {
-		// Check if path starts with /upload to determine directory
-		std::string path = request.getPath();
-		std::string deleteDir = (path.find("upload") != std::string::npos) ? uploadDir : rootDir;
-		httpResponse = response.handleDelete(path, deleteDir);
+		// Use rootDir for DELETE - path already contains full path from root
+		httpResponse = response.handleDelete(request.getPath(), rootDir);
 	} else {
 		response.setErrorPages(config->getErrorPages(), config->getRoot());
 		httpResponse = response.errorResponse(501, "Not Implemented");
@@ -117,6 +115,15 @@ void Server::handleClientRead(int cfd, std::map<int, Client>::iterator it) {
 		if (rootDir.empty()) 
 			rootDir = config->getRoot();
 	
+		// Check if method is implemented (before checking if allowed)
+		std::string method = request.getMethod();
+		if (method != "GET" && method != "POST" && method != "DELETE") {
+			response.setErrorPages(config->getErrorPages(), config->getRoot());
+			it->second.appendWrite(response.errorResponse(501, "Not Implemented"));
+			it->second.clearReadBuffer();
+			return;
+		}
+
 		if (!matchedLocation->isMethodAllowed(request.getMethod())) {
 			handleUnallowedMethod(response, it);
 			return;

@@ -40,6 +40,18 @@ std::string Response::buildHttpResponse(){
         case 201:
             response += "HTTP/1.1 201 Created\r\n";
             break;
+        case 301:
+            response += "HTTP/1.1 301 Moved Permanently\r\n";
+            break;
+        case 302:
+            response += "HTTP/1.1 302 Found\r\n";
+            break;
+        case 307:
+            response += "HTTP/1.1 307 Temporary Redirect\r\n";
+            break;
+        case 308:
+            response += "HTTP/1.1 308 Permanent Redirect\r\n";
+            break;
         case 400:
             response += "HTTP/1.1 400 Bad Request\r\n";
             break;
@@ -65,7 +77,11 @@ std::string Response::buildHttpResponse(){
             response += "HTTP/1.1 500 Internal Server Error\r\n";
             break;
     }
-    response += "Content-Type: " + headers["Content-Type"] + "\r\n";
+    // Add all headers dynamically
+    for (std::map<std::string, std::string>::const_iterator it = headers.begin();
+         it != headers.end(); ++it) {
+        response += it->first + ": " + it->second + "\r\n";
+    }
     std::ostringstream oss;
     oss << body.size();
     response += "Content-Length: " + oss.str() + "\r\n";
@@ -185,6 +201,14 @@ std::string Response::errorResponse(int statusCode, const std::string& message, 
         }
     }
     // Fallback to generic error page
+	headers["Content-Type"] = "text/plain";
+	return buildHttpResponse();
+}
+// Generate HTTP redirect response
+std::string Response::redirectResponse(int code, const std::string& location) {
+	status = code;
+	body = "";
+	headers["Location"] = location;
 	headers["Content-Type"] = "text/plain";
 	return buildHttpResponse();
 }

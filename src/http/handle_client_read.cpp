@@ -112,6 +112,16 @@ void Server::handleClientRead(int cfd, std::map<int, Client>::iterator it) {
 		} std::string rootDir = matchedLocation->getRoot();
 		if (rootDir.empty()) 
 			rootDir = config->getRoot();
+
+		// Check for HTTP redirection first
+		if (matchedLocation->hasRedirection()) {
+			response.setErrorPages(config->getErrorPages(), config->getRoot());
+			it->second.appendWrite(response.redirectResponse(
+				matchedLocation->getRedirectCode(),
+				matchedLocation->getRedirectUrl()));
+			it->second.clearReadBuffer();
+			return;
+		}
 	
 		// Check if method is implemented (before checking if allowed)
 		std::string method = request.getMethod();

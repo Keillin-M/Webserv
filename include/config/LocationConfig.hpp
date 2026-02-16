@@ -26,6 +26,8 @@ class LocationConfig {
 		std::string indexFile;
 		std::vector<std::string> allowedMethods;
 		std::vector<std::string> CGIExtensions;
+		std::string redirectUrl;
+		int redirectCode;
 	
 	public:
 		LocationConfig();
@@ -37,6 +39,8 @@ class LocationConfig {
 		std::string getIndexFile() const;
 		std::vector<std::string> getCGIExtensions() const;
 		std::string getCGIPath() const;
+		std::string getRedirectUrl() const;
+		int getRedirectCode() const;
 
 		// Setters
 		void setPath(const std::string& path);
@@ -45,8 +49,10 @@ class LocationConfig {
 		void setIndexFile(const std::string& index);
 		void setCGIExtensions(const std::string& CGIExtensions);
 		void setCGIPath(const std::string& CGIPath);
+		void setRedirect(int code, const std::string& url);
 
 		bool isMethodAllowed(const std::string& method) const;
+		bool hasRedirection() const;
 		void validate();
 };
 

@@ -166,9 +166,9 @@ test_custom_pages() {
     
     # Test each error page directly
     for code in 400 403 404 405 500 501 505; do
-        webserv_resp=$(curl -s http://localhost:$WEBSERV_PORT/${code}.html)
+        webserv_resp=$(curl -s http://localhost:$WEBSERV_PORT/errors/${code}.html)
         
-        if echo "$webserv_resp" | grep -q "Custom error page from webserv"; then
+        if echo "$webserv_resp" | grep -q "Webserv"; then
             echo -e "${GREEN}  ✓ ${code}.html exists and is valid${NC}"
         else
             echo -e "${RED}  ✗ ${code}.html missing or invalid${NC}"

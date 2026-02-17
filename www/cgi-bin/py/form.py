@@ -47,7 +47,7 @@ elif method == 'GET':
 
 print("<hr>")
 print("<h2>Test Form</h2>")
-print('<form method="POST" action="/cgi-bin/form.py">')
+print('<form method="POST" action="/cgi-bin/py/form.py">')
 print('  <label>Name: <input type="text" name="name" value="John"></label><br>')
 print('  <label>Age: <input type="text" name="age" value="25"></label><br>')
 print('  <button type="submit">Submit</button>')

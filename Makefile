@@ -59,4 +59,3 @@ test:
 		kill `cat .webserv.pid` 2>/dev/null || true; \
 		rm -f .webserv.pid; \
 	fi
-	@pkill -f "./webserv" 2>/dev/null || truemake f

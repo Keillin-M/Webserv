@@ -53,6 +53,10 @@ make test
 ```
 This will execute the available automated and integration tests.
 
+If you prefer not to use `make test` or want to see detailed instructions for manual, advanced, or individual testing, see [tests/TEST_GUIDE.md](tests/TEST_GUIDE.md). This guide covers all test scripts, manual test commands, troubleshooting, and how to extend test coverage.
+
+You can also use your web browser to manually test the server and interact with the provided frontend pages. Simply navigate to `http://localhost:8080/` or explore the pages in `www/pages/` for a user-friendly interface to test features and error handling.
+
 ### Development / Debugging
 - Rebuild: `make re`
 - Run under Valgrind (Linux) to check for leaks:

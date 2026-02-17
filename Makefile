@@ -47,5 +47,15 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: all clean fclean re
-
+test:
+	@echo "$(GREEN)Running full test suite...$(RESET)"
+	@echo "$(GRAY)Starting webserv server...$(RESET)"
+	@./webserv config/default.conf & echo $$! > .webserv.pid
+	@sleep 3
+	@echo "$(GRAY)Server started, running tests...$(RESET)"
+	@./tests/full_test.sh || true
+	@echo "$(GRAY)Tests completed, stopping server...$(RESET)"
+	@if [ -f .webserv.pid ]; then \
+		kill `cat .webserv.pid` 2>/dev/null || true; \
+		rm -f .webserv.pid; \
+	fi

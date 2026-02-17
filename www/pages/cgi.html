@@ -33,11 +33,11 @@
             <h2>About CGI</h2>
             <p><strong>CGI (Common Gateway Interface)</strong> allows the server to execute scripts and return dynamic content. Instead of serving a static file (like <code>index.html</code>), the server <em>executes</em> a program and sends the result.</p>
             <div style="margin-top: 15px; color: var(--text-secondary); line-height: 1.8;">
-                <p><strong style="color: var(--accent-green);">Example: GET /cgi-bin/hello.py</strong></p>
+                <p><strong style="color: var(--accent-green);">Example: GET /cgi-bin/py/hello.py</strong></p>
                 <ol style="margin-left: 20px;">
-                    <li>Browser requests <code>/cgi-bin/hello.py</code></li>
+                    <li>Browser requests <code>/cgi-bin/py/hello.py</code></li>
                     <li>Server sees <code>.py</code> extension → it's CGI!</li>
-                    <li>Server runs: <code>/usr/bin/python3 www/cgi-bin/hello.py</code></li>
+                    <li>Server runs: <code>/usr/bin/python3 www/cgi-bin/py/hello.py</code></li>
                     <li>Python script prints HTML to stdout</li>
                     <li>Server captures output and sends as HTTP response</li>
                 </ol>
@@ -59,26 +59,26 @@
                 <div class="test-card">
                     <h3 style="color: var(--accent-green);">GET: Hello World</h3>
                     <p>Basic CGI test - returns HTML</p>
-                    <code style="font-size: 0.85rem;">/cgi-bin/hello.py</code>
-                    <a href="/cgi-bin/hello.py" target="_blank" class="btn" style="display: inline-block; margin-top: 10px;">Open</a>
+                    <code style="font-size: 0.85rem;">/cgi-bin/py/hello.py</code>
+                    <a href="/cgi-bin/py/hello.py" target="_blank" class="btn" style="display: inline-block; margin-top: 10px;">Open</a>
                 </div>
                 <div class="test-card">
                     <h3 style="color: var(--accent-green);">GET: Environment</h3>
                     <p>Shows all CGI variables</p>
-                    <code style="font-size: 0.85rem;">/cgi-bin/env.py</code>
-                    <a href="/cgi-bin/env.py" target="_blank" class="btn" style="display: inline-block; margin-top: 10px;">Open</a>
+                    <code style="font-size: 0.85rem;">/cgi-bin/py/env.py</code>
+                    <a href="/cgi-bin/py/env.py" target="_blank" class="btn" style="display: inline-block; margin-top: 10px;">Open</a>
                 </div>
                 <div class="test-card">
                     <h3 style="color: var(--accent-green);">GET: Query String</h3>
                     <p>GET with <code>?name=test&value=42</code></p>
-                    <code style="font-size: 0.85rem;">/cgi-bin/env.py?...</code>
-                    <a href="/cgi-bin/env.py?name=test&value=42" target="_blank" class="btn" style="display: inline-block; margin-top: 10px;">Open</a>
+                    <code style="font-size: 0.85rem;">/cgi-bin/py/env.py?...</code>
+                    <a href="/cgi-bin/py/env.py?name=test&value=42" target="_blank" class="btn" style="display: inline-block; margin-top: 10px;">Open</a>
                 </div>
                 <div class="test-card">
                     <h3 style="color: var(--accent-green);">POST: Form</h3>
                     <p>Has form to test POST</p>
-                    <code style="font-size: 0.85rem;">/cgi-bin/form.py</code>
-                    <a href="/cgi-bin/form.py" target="_blank" class="btn" style="display: inline-block; margin-top: 10px;">Open</a>
+                    <code style="font-size: 0.85rem;">/cgi-bin/py/form.py</code>
+                    <a href="/cgi-bin/py/form.py" target="_blank" class="btn" style="display: inline-block; margin-top: 10px;">Open</a>
                 </div>
             </div>
         </div>
@@ -92,22 +92,22 @@
                 <div class="test-card">
                     <h3 style="color: var(--error);">404 Not Found</h3>
                     <p>Script doesn't exist → server returns 404</p>
-                    <code style="font-size: 0.85rem;">/cgi-bin/nonexistent.py</code>
-                    <a href="/cgi-bin/nonexistent.py" target="_blank" class="btn btn-danger" style="display: inline-block; margin-top: 10px;">Open</a>
+                    <code style="font-size: 0.85rem;">/cgi-bin/py/nonexistent.py</code>
+                    <a href="/cgi-bin/py/nonexistent.py" target="_blank" class="btn btn-danger" style="display: inline-block; margin-top: 10px;">Open</a>
                     <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 8px;"><strong>Expected:</strong> 404 error page</p>
                 </div>
                 <div class="test-card">
                     <h3 style="color: var(--error);">Runtime Error</h3>
                     <p>Script crashes on purpose (Python bug)</p>
-                    <code style="font-size: 0.85rem;">/cgi-bin/error.py</code>
-                    <a href="/cgi-bin/error.py" target="_blank" class="btn btn-danger" style="display: inline-block; margin-top: 10px;">Open</a>
+                    <code style="font-size: 0.85rem;">/cgi-bin/py/error.py</code>
+                    <a href="/cgi-bin/py/error.py" target="_blank" class="btn btn-danger" style="display: inline-block; margin-top: 10px;">Open</a>
                     <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 8px;"><strong>Expected:</strong> "About to crash..." then script dies. Server continues working.</p>
                 </div>
             </div>
             
             <div style="margin-top: 20px; padding: 15px; background: var(--bg-tertiary); border-radius: 8px; border-left: 4px solid var(--accent-green);">
                 <p style="margin: 0;"><strong style="color: var(--accent-green);">How to verify:</strong> After testing errors above, click the button below. If it works, the server handled the errors correctly.</p>
-                <a href="/cgi-bin/hello.py" target="_blank" class="btn" style="display: inline-block; margin-top: 10px;">Verify: Open hello.py</a>
+                <a href="/cgi-bin/py/hello.py" target="_blank" class="btn" style="display: inline-block; margin-top: 10px;">Verify: Open hello.py</a>
             </div>
         </div>
     </div>

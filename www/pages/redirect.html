@@ -5,136 +5,143 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Redirect Tests | Webserv</title>
     <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        .redirect-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .redirect-card {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .redirect-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .redirect-card h2 {
+            font-size: 2.5rem;
+            margin: 0 0 5px 0;
+        }
+        
+        .redirect-card .name { font-size: 1rem; margin-bottom: 10px; }
+        .redirect-card .desc { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 15px; }
+        .redirect-card .btn { width: 100%; padding: 12px; }
+        
+        .card-302 { border-color: var(--accent-purple); }
+        .card-302 h2 { color: var(--accent-purple); }
+        
+        .card-307 { border-color: var(--accent-green); }
+        .card-307 h2 { color: var(--accent-green); }
+        
+        .info-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 25px;
+        }
+        
+        .info-box h3 { margin-top: 0; color: var(--accent-purple); }
+        
+        .curl-box {
+            background: #1a1a2e;
+            border-radius: 6px;
+            padding: 12px 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            margin: 8px 0;
+            cursor: pointer;
+        }
+        
+        .curl-box:hover { background: #252540; }
+        
+        .warning-box {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid var(--warning);
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-top: 25px;
+        }
+        
+        .warning-box h3 { margin-top: 0; color: var(--warning); }
+    </style>
 </head>
 <body>
-    <!-- Hero Section -->
     <div class="hero">
-        <img src="../assets/img/hero.svg" alt="Webserv Test Playground" class="hero-image">
+        <img src="../assets/img/hero.svg" alt="Webserv" class="hero-image">
         <h1>HTTP Redirect Tests</h1>
-        <p>Test 301, 302, 307, and 308 redirections</p>
+        <p>Test different redirect status codes</p>
     </div>
 
-    <!-- Main Container -->
     <div class="container">
-        <!-- Navigation -->
         <nav class="nav">
             <a href="../index.html" class="nav-btn">Home</a>
             <a href="get.html" class="nav-btn">GET Tests</a>
             <a href="post.html" class="nav-btn">POST Tests</a>
             <a href="delete.html" class="nav-btn">DELETE Tests</a>
-            <a href="redirect.html" class="nav-btn">Redirections</a>
+            <a href="redirect.html" class="nav-btn active">Redirections</a>
             <a href="errors.html" class="nav-btn">Error Pages</a>
             <a href="cgi.html" class="nav-btn">CGI Tests</a>
             <a href="about.html" class="nav-btn">About</a>
         </nav>
 
-        <!-- Info Card -->
-        <div class="card">
-            <h2>About HTTP Redirects</h2>
-            <p>HTTP redirects inform the client that a resource has moved to a different location. Different status codes have different semantics:</p>
+        <!-- Browser-safe redirects -->
+        <h3 style="margin-top: 30px;">Temporary Redirects (Browser Safe)</h3>
+        <div class="redirect-grid">
+            <div class="redirect-card card-302">
+                <h2>302</h2>
+                <p class="name">Found</p>
+                <p class="desc">Temporary redirect. Not cached by browsers.</p>
+                <a href="/redirect-302" class="btn">Test 302</a>
+            </div>
             
-            <div style="margin-top: 20px; display: grid; gap: 15px;">
-                <div style="background: var(--bg-tertiary); padding: 15px; border-radius: 8px; border-left: 4px solid var(--accent-purple);">
-                    <h3 style="margin: 0 0 10px 0; color: var(--accent-purple);">301 Moved Permanently</h3>
-                    <p style="margin: 0; color: var(--text-secondary);">Resource permanently moved. Search engines update their links. Method may change to GET.</p>
-                </div>
-
-                <div style="background: var(--bg-tertiary); padding: 15px; border-radius: 8px; border-left: 4px solid var(--accent-blue);">
-                    <h3 style="margin: 0 0 10px 0; color: var(--accent-blue);">302 Found (Temporary Redirect)</h3>
-                    <p style="margin: 0; color: var(--text-secondary);">Resource temporarily at different URI. Original URI should be used for future requests. Method may change to GET.</p>
-                </div>
-
-                <div style="background: var(--bg-tertiary); padding: 15px; border-radius: 8px; border-left: 4px solid var(--accent-green);">
-                    <h3 style="margin: 0 0 10px 0; color: var(--accent-green);">307 Temporary Redirect</h3>
-                    <p style="margin: 0; color: var(--text-secondary);">Like 302, but guarantees the HTTP method won't change (POST stays POST).</p>
-                </div>
-
-                <div style="background: var(--bg-tertiary); padding: 15px; border-radius: 8px; border-left: 4px solid var(--error);">
-                    <h3 style="margin: 0 0 10px 0; color: var(--error);">308 Permanent Redirect</h3>
-                    <p style="margin: 0; color: var(--text-secondary);">Like 301, but guarantees the HTTP method won't change (POST stays POST).</p>
-                </div>
+            <div class="redirect-card card-307">
+                <h2>307</h2>
+                <p class="name">Temporary Redirect</p>
+                <p class="desc">Temporary redirect. Preserves HTTP method.</p>
+                <a href="/redirect-307" class="btn btn-success">Test 307</a>
             </div>
         </div>
 
-        <!-- Test Redirects -->
-        <div class="card">
-            <h2>Test Redirect Status Codes</h2>
-            <p>Configure these paths in your server config file to return the appropriate redirect status codes:</p>
-
-            <div class="form-group">
-                <label for="redirect-base-url">Base URL</label>
-                <input type="text" id="redirect-base-url" value="http://localhost:8080">
-            </div>
-
-            <div class="test-grid">
-                <div class="test-card">
-                    <h3>301 Redirect</h3>
-                    <p>Permanent redirect</p>
-                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 10px 0;"><code>/redirect/301</code> → <code>/</code></p>
-                    <button class="btn" onclick="testRedirect('301')">Test 301</button>
-                </div>
-
-                <div class="test-card">
-                    <h3>302 Redirect</h3>
-                    <p>Temporary redirect (found)</p>
-                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 10px 0;"><code>/redirect/302</code> → <code>/</code></p>
-                    <button class="btn" onclick="testRedirect('302')">Test 302</button>
-                </div>
-
-                <div class="test-card">
-                    <h3>307 Redirect</h3>
-                    <p>Temporary (method preserved)</p>
-                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 10px 0;"><code>/redirect/307</code> → <code>/</code></p>
-                    <button class="btn" onclick="testRedirect('307')">Test 307</button>
-                </div>
-
-                <div class="test-card">
-                    <h3>308 Redirect</h3>
-                    <p>Permanent (method preserved)</p>
-                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 10px 0;"><code>/redirect/308</code> → <code>/</code></p>
-                    <button class="btn" onclick="testRedirect('308')">Test 308</button>
-                </div>
-            </div>
+        <!-- Cache warning -->
+        <div class="warning-box">
+            <h3>About Browser Cache and Redirects</h3>
+            <p>Permanent redirects (301, 308) are <strong>cached by browsers</strong>. Once a browser sees a 301 or 308, it remembers the redirect and skips the server on future requests.</p>
+            <p>This is correct HTTP behaviour, but it makes browser testing difficult. Use <strong>curl</strong> in the terminal to test permanent redirects reliably.</p>
         </div>
 
-        <!-- Custom Redirect Test -->
-        <div class="card">
-            <h2>Custom Redirect Test</h2>
-            <p>Test any redirect path on your server:</p>
+        <!-- Curl tests for permanent redirects -->
+        <div class="info-box">
+            <h3>Test Permanent Redirects with curl</h3>
+            <p>Copy and paste these commands in your terminal:</p>
             
-            <form id="custom-redirect-form" onsubmit="event.preventDefault(); testCustomRedirect();">
-                <div class="form-group">
-                    <label for="custom-path">Redirect Path</label>
-                    <input type="text" id="custom-path" value="/redirect" placeholder="/redirect" required>
-                </div>
-
-                <button type="submit" class="btn btn-info">Test Custom Path</button>
-            </form>
+            <p style="margin-top: 15px; color: var(--accent-blue);"><strong>301 Moved Permanently:</strong></p>
+            <div class="curl-box">curl -I http://localhost:8080/redirect-301</div>
+            
+            <p style="margin-top: 15px; color: var(--warning);"><strong>308 Permanent Redirect:</strong></p>
+            <div class="curl-box">curl -I http://localhost:8080/redirect-308</div>
+            
+            <p style="margin-top: 20px; color: var(--text-secondary);">Expected: <code>HTTP/1.1 301</code> or <code>HTTP/1.1 308</code> with <code>Location</code> header.</p>
         </div>
 
-        <!-- What to Check -->
-        <div class="card">
-            <h2>What to Verify</h2>
-            <ul style="color: var(--text-secondary); margin-left: 20px;">
-                <li><strong style="color: var(--accent-green);">Status Code:</strong> Correct redirect status (301, 302, 307, or 308)</li>
-                <li><strong style="color: var(--accent-green);">Location Header:</strong> Contains the target URL</li>
-                <li><strong style="color: var(--accent-green);">Browser Behavior:</strong> Fetch API follows redirects by default (check response details)</li>
-                <li><strong style="color: var(--accent-green);">Final URL:</strong> Note that browsers automatically follow redirects</li>
-            </ul>
+        <!-- All curl commands -->
+        <div class="info-box">
+            <h3>All Redirect Tests (curl)</h3>
+            <div class="curl-box">curl -I http://localhost:8080/redirect-301</div>
+            <div class="curl-box">curl -I http://localhost:8080/redirect-302</div>
+            <div class="curl-box">curl -I http://localhost:8080/redirect-307</div>
+            <div class="curl-box">curl -I http://localhost:8080/redirect-308</div>
         </div>
-
-        <!-- Response Display -->
-        <div id="response-container" class="response-container"></div>
     </div>
-
-    <script src="../assets/js/app.js"></script>
-    <script>
-        function testCustomRedirect() {
-            const baseUrl = document.getElementById('redirect-base-url').value;
-            const path = document.getElementById('custom-path').value;
-            const url = baseUrl + path;
-            makeRequest('GET', url);
-        }
-    </script>
 </body>
 </html>

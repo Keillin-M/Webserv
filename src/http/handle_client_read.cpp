@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/10 11:25:08 by gabrsouz          #+#    #+#             */
-/*   Updated: 2026/02/16 14:17:27 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/17 13:45:43 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,12 +73,14 @@ void Server::handleMethod(Request &request, Response &response, const LocationCo
 	
 	// Set error pages for Response object
 	response.setErrorPages(config->getErrorPages(), config->getRoot());
-	if (request.getMethod() == "GET" || request.getMethod() == "POST") {
+	if (request.getMethod() == "GET" || request.getMethod() == "HEAD" || request.getMethod() == "POST") {
 		checkIfCgi(request, matchedLocation);
 		if (request.getIsCgi()) 
 			httpResponse = response.handleCgi(request, *config, rootDir, matchedLocation->getCGIPath());
 		else {
-			if (request.getMethod() == "GET")
+			if (request.getMethod() == "HEAD")
+				response.setIsHead(true);
+			if (request.getMethod() == "GET" || request.getMethod() == "HEAD")
 				httpResponse = response.handleGet(request.getPath(), rootDir, indexFile);
 			else
 				httpResponse = response.handlePost(request.getBody(), uploadDir);

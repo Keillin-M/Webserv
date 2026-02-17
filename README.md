@@ -37,7 +37,6 @@ cd webserv
 make
 ```
 
-
 ### Run
 ```bash
 # run server with a config
@@ -46,6 +45,13 @@ make
 # test with curl
 curl -v http://localhost:8080/
 ```
+
+### Testing
+To run the test suite, use:
+```bash
+make test
+```
+This will execute the available automated and integration tests.
 
 ### Development / Debugging
 - Rebuild: `make re`

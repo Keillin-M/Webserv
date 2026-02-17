@@ -1,90 +1,94 @@
-name: webserv-ci
+name: webserv-enhanced-ci
 
-# This workflow runs automatically on every push and pull request.
-# Its goal is to ensure the project builds correctly and the server
-# can start and respond to a basic HTTP/1.1 request.
 on:
   push:
   pull_request:
 
 jobs:
-  build-and-smoke-test:
-    # Run only on Linux (simpler and more predictable for CI)
-    runs-on: ubuntu-latest
+  build-and-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        config:
+          - path: config/default.conf
+            port: "8080"
+        # Add more configs as needed
+    env:
+      CONFIG: ${{ matrix.config.path }}
+      PORT: ${{ matrix.config.port }}
 
     steps:
-      # Step 1: Clone the repository into the CI runner
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Step 2: Compile the project using C++98 and 42-required flags
-      # -Werror ensures warnings fail the build
-      # -std=c++98 enforces subject compliance
       - name: Build webserv (C++98)
         run: |
           make fclean || true
           make CXXFLAGS="-Wall -Wextra -Werror -std=c++98"
 
-      # Step 3: Smoke test
-      # Start the server, wait for it to listen on the port,
-      # then send a basic HTTP/1.1 request using curl.
-      - name: Smoke test (HTTP/1.1)
+      - name: Run tests (if available)
         run: |
-          set -e
-
-          # Path to the configuration file used for CI
-          CONFIG="config/default.conf"
-
-          # Port defined inside the config file
-          PORT="8080"
-
-          # Ensure the config file exists
-          if [ ! -f "$CONFIG" ]; then
-            echo "Config file not found: $CONFIG"
-            exit 1
+          if grep -q '^test:' Makefile; then
+            make test
+          else
+            echo "No test target in Makefile, skipping."
           fi
 
-          echo "Starting webserv..."
+      - name: Lint (clang-format, if config exists)
+        if: hashFiles('.clang-format') != ''
+        run: |
+          find . -name '*.cpp' -o -name '*.hpp' | xargs clang-format --dry-run --Werror
+
+      - name: Start webserv and smoke test (HTTP/1.1)
+        run: |
+          set -e
+          if [ ! -f "$CONFIG" ]; then
+            echo "Config file not found: $CONFIG"; exit 1
+          fi
+          echo "Starting webserv with $CONFIG..."
           ./webserv "$CONFIG" > webserv.log 2>&1 &
           SERVER_PID=$!
-
-          # Give the server some time to bind and listen
-          # We retry several times to avoid race conditions
-          for i in 1 2 3 4 5 6 7 8 9 10; do
+          for i in {1..10}; do
             if curl -sS --http1.1 "http://127.0.0.1:${PORT}/" -o /dev/null; then
               echo "Server responded on attempt $i"
               break
             fi
             sleep 0.5
           done
-
-          # Perform a real HTTP request and capture the status code
           STATUS="$(curl -sS --http1.1 -o /dev/null -w "%{http_code}" "http://127.0.0.1:${PORT}/")"
           echo "HTTP status returned by webserv: $STATUS"
-
-          # Accept common valid HTTP responses
-          # (server is alive even if the route does not exist)
           case "$STATUS" in
             200|301|302|403|404) ;;
             *)
               echo "Unexpected HTTP status: $STATUS"
-              echo "---- webserv.log ----"
               cat webserv.log || true
               kill "$SERVER_PID" || true
               wait "$SERVER_PID" || true
               exit 1
               ;;
           esac
-
-          # Stop the server cleanly
           kill "$SERVER_PID" || true
           wait "$SERVER_PID" || true
 
-      # Step 4: Upload logs if something goes wrong
-      # This helps debugging CI failures without rerunning locally
-      - name: Upload logs on failure
-        if: failure()
+      - name: Memory check (Linux only, valgrind)
+        if: runner.os == 'Linux'
+        run: |
+          if command -v valgrind; then
+            if [ -f "$CONFIG" ]; then
+              valgrind --leak-check=full --error-exitcode=1 ./webserv "$CONFIG" &
+              SERVER_PID=$!
+              sleep 2
+              curl -sS --http1.1 "http://127.0.0.1:${PORT}/" || true
+              kill "$SERVER_PID" || true
+              wait "$SERVER_PID" || true
+            fi
+          else
+            echo "valgrind not installed, skipping memory check"
+          fi
+
+      - name: Upload logs
         uses: actions/upload-artifact@v4
         with:
-          name: webserv-log
+          name: webserv-logs-os-${{ matrix.os }}
           path: webserv.log

@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/10 11:25:08 by gabrsouz          #+#    #+#             */
-/*   Updated: 2026/02/17 13:45:43 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/17 14:56:53 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,7 +133,7 @@ void Server::handleClientRead(int cfd, std::map<int, Client>::iterator it) {
 	
 		// Check if method is implemented (before checking if allowed)
 		std::string method = request.getMethod();
-		if (method != "GET" && method != "POST" && method != "DELETE") {
+		if (method != "GET" && method != "HEAD" && method != "POST" && method != "DELETE") {
 			response.setErrorPages(config->getErrorPages(), config->getRoot());
 			it->second.appendWrite(response.errorResponse(501, "Not Implemented"));
 			it->second.clearReadBuffer();

@@ -1,6 +1,0 @@
-This is my custom text file content.
-You can write anything here!
-
-Line 1
-Line 2
-Line 3

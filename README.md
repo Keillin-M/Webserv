@@ -7,6 +7,12 @@ This repository implements a minimal HTTP server for the 42 School curriculum.
 
 `webserv` is a small, standards-oriented HTTP server implemented in C++ as part of the 42 School curriculum. The goal is to implement a robust server that correctly parses HTTP requests and serves responses, supporting core features expected in the project evaluation: configuration parsing, multiple virtual hosts, static file serving, CGI execution, proper error handling, and concurrent client handling using non-blocking I/O.
 
+Sections included:
+- **Description** presenting the project and goals.
+- **Instructions** for compilation and execution.
+- **Resources** and AI usage disclosure.
+- Additional sections: features, project structure, development notes.
+
 ### Key goals
 - Correct HTTP request parsing and response generation according to relevant RFCs.
 - Support for common HTTP methods (GET, POST, DELETE) as required by the subject.
@@ -15,7 +21,6 @@ This repository implements a minimal HTTP server for the 42 School curriculum.
 - CGI support for dynamic responses.
 - Concurrency via `poll`/`select`/`kqueue` or similar non-blocking approach.
 - Proper handling of persistent connections and chunked transfer when needed.
-
 
 ## Instructions
 

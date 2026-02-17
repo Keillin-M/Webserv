@@ -316,10 +316,10 @@ run_cgi_tests() {
     echo -e "${CYAN}Tests: Python/PHP scripts, GET/POST methods, environment variables, error handling${NC}"
     echo ""
     
-    if [[ -f "tests/5.test_cgi.py" ]]; then
+    if [[ -f "tests/cgi_test.py" ]]; then
         echo "Running comprehensive Python CGI test suite..."
         echo -e "${BLUE}→ Testing: CGI script execution, environment variables, POST/GET handling, error recovery${NC}"
-        if python3 tests/5.test_cgi.py; then
+        if python3 tests/cgi_test.py; then
             echo -e "${GREEN}✓ CGI Tests: PASSED${NC}"
             return 0
         else
@@ -327,7 +327,7 @@ run_cgi_tests() {
             return 1
         fi
     else
-        echo -e "${RED}✗ CGI test script not found: tests/5.test_cgi.py${NC}"
+        echo -e "${RED}✗ CGI test script not found: tests/cgi_test.py${NC}"
         return 1
     fi
 }

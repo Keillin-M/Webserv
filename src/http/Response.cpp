@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:41 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/17 13:47:36 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/17 15:10:57 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,7 @@
 #include "../../include/cgi/CGI.hpp"
 #include "../../include/http/Request.hpp"
 
-Response::Response() : isHead(false) {}
-
-bool Response::getIsHead() const { return (isHead); }
-
-void Response::setIsHead(bool i) { isHead = i; }
+Response::Response() {}
 
 // Store error page configuration from server config
 void Response::setErrorPages(const std::map<int, std::string>& pages, const std::string& root) {
@@ -90,8 +86,7 @@ std::string Response::buildHttpResponse(){
     oss << body.size();
     response += "Content-Length: " + oss.str() + "\r\n";
     response += "\r\n";
-    if (this->getIsHead() != true)
-        response += body;
+    response += body;
     
     return response;
 }

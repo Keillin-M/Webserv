@@ -6,7 +6,7 @@
 /*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:26 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/17 13:45:22 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/17 15:10:20 by kmaeda           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,6 @@ class Response {
 		std::map<std::string, std::string> headers;
 		std::map<int, std::string> errorPages;
 		std::string errorRoot;
-		bool isHead;
 		
 		std::string buildHttpResponse();
 		std::string getContentType(const std::string& path);
@@ -48,8 +47,6 @@ class Response {
 		Response();
 		
 		void setErrorPages(const std::map<int, std::string>& pages, const std::string& root);
-		bool getIsHead() const;
-		void setIsHead(bool i);
 
 		std::string handleGet(const std::string& path, const std::string& rootDir, const std::string& indexFile);
 		std::string handleCgi(const Request& request, const ServerConfig& serverCfg, const std::string& rootDir, const std::string& cgiPath);

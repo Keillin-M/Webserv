@@ -29,7 +29,7 @@ void Server::setupListenSocket() {
 	}
 	// Allow socket reuse (avoid TIME_WAIT binding issues)
 	int opt = 1;
-	setsockopt(listenFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+	setsockopt(listenFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)); //activate the socket, allowing to bind with the fd
 	iniciateAddr(addr, port);
 	// Bind socket to specified port
 	if (bind(listenFd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {

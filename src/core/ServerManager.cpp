@@ -33,7 +33,8 @@ void ServerManager::validatePorts(std::vector<ServerConfig>& configs) {
 		if (usedPorts.find(port) != usedPorts.end()) {
 			std::cerr << "ERROR: Port " << port << " duplicated in config!" << std::endl;
 			exit(1);
-		} usedPorts.insert(port);
+		} 
+		usedPorts.insert(port);
 	}
 	std::cout << "[ServerManager] Port validation: OK (" << configs.size() << " servers)" << std::endl;
 }

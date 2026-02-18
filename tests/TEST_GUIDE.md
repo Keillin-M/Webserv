@@ -36,6 +36,10 @@ The frontend in `www/pages/` provides user-friendly interfaces for exploring fea
 	- `tests/cgi_test.py` — CGI and Python script tests
 	- `tests/full_test.sh` — Full integration and error page tests
 
+- **Stress Testing with Siege**:
+	- `siege -c10 -t30S http://localhost:8080/` — 10 concurrent users for 30 seconds
+	- `siege -c20 -r100 http://localhost:8080/` — 20 concurrent users, 100 requests each
+
 ---
 
 ## 🚀 Quick Start: Full Automated Test Suite

@@ -6,7 +6,7 @@
 /*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/09 14:32:09 by tmarcos           #+#    #+#             */
-/*   Updated: 2026/02/12 12:41:28 by gabrsouz         ###   ########.fr       */
+/*   Updated: 2026/02/19 11:31:59 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,13 +147,13 @@ void ServerManager::handleClientSocket(int fd, short revents) {
 }
 
 // Main event loop - polls all sockets and dispatches events
-void ServerManager::run() {
+void ServerManager::run(volatile sig_atomic_t& running) {
 	std::cout << "[ServerManager] Starting main loop..." << std::endl;
 	std::cout << "[ServerManager] Listening on " << servers.size() << " port(s):" << std::endl;
 	for (size_t i = 0; i < servers.size(); ++i)
 		std::cout << "  - Port " << servers[i]->getPort() 
 		          << " (fd=" << servers[i]->getListenFd() << ")" << std::endl;
-	while (true) {
+	while (running) {
 		// Rebuild poll array with current state of all sockets
 		std::vector<struct pollfd> pollFds;
 		buildPollArray(pollFds);
@@ -168,12 +168,15 @@ void ServerManager::run() {
 		} if (ready == 0) {
 			// No events -- still check timeouts on idle tick
 		}
+		// Check if we should continue running
+		if (!running)
+			break;
 		// Timeout sweep (check every iteration, including idle ticks)
 		time_t now = std::time(NULL);
 		for (size_t i = 0; i < servers.size(); ++i)
 			servers[i]->checkTimeouts(now, 60);
 		// Process all sockets with events
-		for (size_t i = 0; i < pollFds.size(); ++i) {
+		for (size_t i = 0; i < pollFds.size() && running; ++i) {
 			if (pollFds[i].revents == 0)
 				continue;  // No events on this socket
 			int fd = pollFds[i].fd;
@@ -202,4 +205,34 @@ void ServerManager::run() {
 				handleClientSocket(fd, revents);
 		}
 	}
+	// Perform cleanup when exiting the main loop
+	shutdown();
+}
+
+// Graceful shutdown - close all sockets and clean up resources
+void ServerManager::shutdown() {
+	
+	// Close all client connections first
+	for (std::map<int, Server*>::iterator serverIt = clientFdToServer.begin(); 
+		 serverIt != clientFdToServer.end(); ++serverIt) {
+		int clientFd = serverIt->first;
+		close(clientFd);
+	}
+	clientFdToServer.clear();
+	
+	// Close listening sockets and clean up servers
+	for (size_t i = 0; i < servers.size(); ++i) {
+		Server* server = servers[i];
+		int listenFd = server->getListenFd();
+		if (listenFd >= 0)
+			close(listenFd);
+		
+		// Close any remaining client connections in this server
+		std::map<int, Client>& clients = server->getClients();
+		for (std::map<int, Client>::iterator clientIt = clients.begin(); 
+			 clientIt != clients.end(); ++clientIt)
+			close(clientIt->first);
+		clients.clear();
+	}
+	listenFdToServer.clear();
 }

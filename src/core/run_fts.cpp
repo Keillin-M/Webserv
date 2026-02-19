@@ -6,7 +6,7 @@
 /*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/10 12:24:17 by gabrsouz          #+#    #+#             */
-/*   Updated: 2026/02/12 12:38:47 by gabrsouz         ###   ########.fr       */
+/*   Updated: 2026/02/19 14:29:52 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,10 +98,11 @@ void Server::handleClientWrite(int cfd, std::map<int, Client>::iterator it) {
 	if (sent > 0) {
 		out.erase(0, static_cast<size_t>(sent));
 		it->second.updateLastSeen();
-	} else {
-		// sent <= 0: error -- close client (no errno check per subject)
+	} else if (sent == 0) {
+		// sent == 0: valid but no bytes sent, keep connection
+		return;
+	} else
 		closeClient(cfd);
-	}
 }
 			
 // Check if response is complete and transition to IDLE or close

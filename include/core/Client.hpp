@@ -54,6 +54,7 @@ class Client {
 		std::string getReadBuffer() const;
 		bool requestCompleteCheck() const;
 		void clearReadBuffer();
+		bool isBodySizeExceeded(size_t maxBodySize) const;
 
 		// write buffer accessors
 		void appendWrite(const std::string& s);

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:41 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/17 15:10:57 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/19 12:00:00 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,9 @@ std::string Response::buildHttpResponse(){
             break;
         case 405:
             response += "HTTP/1.1 405 Method Not Allowed\r\n";
+            break;
+        case 413:
+            response += "HTTP/1.1 413 Request Entity Too Large\r\n";
             break;
         case 500:
             response += "HTTP/1.1 500 Internal Server Error\r\n";

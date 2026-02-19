@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/05 13:17:35 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/13 12:27:47 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/19 11:49:22 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -192,6 +192,13 @@ ServerConfig ConfigParser::parseServer(const std::vector<std::string>& tokens, s
 			config.addErrorPages(errorCode, tokens[++i]);
 			if (i + 1 >= tokens.size() || tokens[i + 1] != ";")
 				error("Missing ';' after error_page");
+			++i;
+		} else if (tokens[i] == "client_max_body_size") {
+			if (i + 1 >= tokens.size())
+				error("Missing value after 'client_max_body_size'");
+			config.setClientMaxBodySize(tokens[++i]);
+			if (i + 1 >= tokens.size() || tokens[i + 1] != ";")
+				error("Missing ';' after client_max_body_size");
 			++i;
 		} else if (tokens[i] == "location") {
 			config.addLocations(parseLocation(tokens, i));

@@ -94,6 +94,12 @@ size_t Client::extractContentLength() const {
 	return (cl > 0) ? static_cast<size_t>(cl) : 0;
 }
 
+// Check if request body size exceeds the maximum allowed size
+bool Client::isBodySizeExceeded(size_t maxBodySize) const {
+	size_t contentLength = extractContentLength();
+	return contentLength > maxBodySize;
+}
+
 // Write buffer (unchanged behaviour)
 void Client::appendWrite(const std::string& s) {
 	writeBuffer.append(s);

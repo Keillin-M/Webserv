@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:26 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/17 15:10:20 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/19 11:56:48 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@
 #include <ctime>
 #include <cstdio>
 #include <fstream>
+#include <dirent.h>
+#include <sys/stat.h>
 
 
 class Request;

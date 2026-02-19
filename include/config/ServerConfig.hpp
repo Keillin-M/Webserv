@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/06 14:19:06 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/09 18:17:19 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/19 11:55:25 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@
 #include <vector>
 #include <map>
 #include <stdexcept>
+#include <cstdlib>
+#include <cctype>
 #include "LocationConfig.hpp"
 
 class ServerConfig {
@@ -26,6 +28,7 @@ class ServerConfig {
 		std::string root;
 		std::map<int, std::string> errorPages;
 		std::vector<LocationConfig> locations;
+		size_t clientMaxBodySize; // in bytes
 	
 	public:
 		ServerConfig();
@@ -36,6 +39,7 @@ class ServerConfig {
 		std::string getRoot() const;
 		std::map<int, std::string> getErrorPages() const;
 		std::vector<LocationConfig> getLocations() const;
+		size_t getClientMaxBodySize() const;
 
 		// Setters
 		void setPort(int n);
@@ -43,6 +47,7 @@ class ServerConfig {
 		void setRoot(const std::string& s);
 		void addErrorPages(int status, const std::string& path);
 		void addLocations(const LocationConfig& location);
+		void setClientMaxBodySize(const std::string& sizeStr);
 
 		const LocationConfig* findMatchLocation(const std::string& requestPath) const;
 		void validate();

@@ -19,17 +19,17 @@ The frontend in `www/pages/` provides user-friendly interfaces for exploring fea
 
 ## 📂 Test Assets and Structure
 
-- **Custom Error Pages**:  
-	Place in `www/errors/`  
-	- `www/errors/400.html` — Bad Request  
-	- `www/errors/403.html` — Forbidden  
-	- `www/errors/404.html` — Not Found  
-	- `www/errors/405.html` — Method Not Allowed  
-	- `www/errors/500.html` — Internal Server Error  
-	- `www/errors/501.html` — Not Implemented  
-	- `www/errors/505.html` — HTTP Version Not Supported  
+- **Custom Error Pages**:
+	Place in `www/errors/`
+	- `www/errors/400.html` — Bad Request
+	- `www/errors/403.html` — Forbidden
+	- `www/errors/404.html` — Not Found
+	- `www/errors/405.html` — Method Not Allowed
+	- `www/errors/500.html` — Internal Server Error
+	- `www/errors/501.html` — Not Implemented
+	- `www/errors/505.html` — HTTP Version Not Supported
 
-- **Config files**:  
+- **Config files**:
 	- `config/default.conf` — Main server config (edit for different port/tests if needed)
 
 - **Test Scripts** (run from repo root):
@@ -95,6 +95,11 @@ bash tests/full_test.sh               # Full integration and error page tests
 		curl -X PATCH http://localhost:8080/
 		```
 
+- **client_max_body_size, test:**
+
+	```bash
+	curl -X POST -H "Content-Type: text/plain" --data "Hello world" http://localhost:8080/
+	```
 ---
 
 ## 📝 Expected Results
@@ -143,12 +148,12 @@ You can test HTTP redirection responses using curl or your browser. Example:
 
 ## ☑️ Tips and Troubleshooting
 
-- **If tests fail with “default error page”:**  
+- **If tests fail with “default error page”:**
 	- Ensure all needed HTML files are present and readable in `www/errors/`.
 	- Check your webserv config error_page directives match those files.
 	- The server process must have permissions to read them.
 	- Double-check your server actually loads and returns these files on error.
 
-- **If CGI/POST/Uploads fail:**  
+- **If CGI/POST/Uploads fail:**
 	- Confirm scripts in `www/cgi-bin/` are present and executable and `cgi_path`/`cgi_extension` in config is correct.
 	- Validate your config for allowed methods in location blocks.

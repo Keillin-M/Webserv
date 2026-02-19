@@ -222,16 +222,16 @@ function testRedirect(type) {
 
     switch(type) {
         case '301':
-            path = '/redirect/301';
+            path = '/redirect-301';
             break;
         case '302':
-            path = '/redirect/302';
+            path = '/redirect-302';
             break;
         case '307':
-            path = '/redirect/307';
+            path = '/redirect-307';
             break;
         case '308':
-            path = '/redirect/308';
+            path = '/redirect-308';
             break;
         default:
             path = '/redirect';

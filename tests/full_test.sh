@@ -294,7 +294,7 @@ run_redirect_tests() {
 
     # Test various redirect scenarios
     echo -e "${BLUE}→ Testing: HTTP redirect responses with proper status codes and Location headers${NC}"
-    test_redirect "http://localhost:8080/redirect/301" "301" "/pages/about.html" || redirect_failed=1
+    test_redirect "http://localhost:8080/redirect-301" "301" "/pages/about.html" || redirect_failed=1
     test_redirect "http://localhost:8080/redirect-302" "302" "/pages/r302.html" || redirect_failed=1
     test_redirect "http://localhost:8080/redirect-307" "307" "/pages/r307.html" || redirect_failed=1
 

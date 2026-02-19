@@ -6,7 +6,7 @@
 /*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 12:57:17 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/06 15:25:36 by gabrsouz         ###   ########.fr       */
+/*   Updated: 2026/02/19 12:02:49 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,8 +48,6 @@ class Request {
 
 	private:
 		void setParseVariables(const std::vector<std::string>& parse);
-		
-		// TODO: Implement chunked transfer encoding support later
 };
 
 #endif

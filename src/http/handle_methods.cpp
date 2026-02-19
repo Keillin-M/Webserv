@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   handle_client_read.cpp                             :+:      :+:    :+:   */
+/*   handle_methods.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/10 11:25:08 by gabrsouz          #+#    #+#             */
-/*   Updated: 2026/02/12 15:37:26 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/19 12:00:12 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ std::string Response::handleGet(const std::string& path, const std::string& root
     if (isDirectory(full_path)) {
         full_path += "/" + indexFile;
         if (!fileExists(full_path))
-            return errorResponse(404, "No index file");
+            return errorResponse(404, "Not Found");
     }
     if (!readFile(full_path, body))
         return errorResponse(500, "Failed to read file");

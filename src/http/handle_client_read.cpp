@@ -103,6 +103,15 @@ void Server::handleClientRead(int cfd, std::map<int, Client>::iterator it) {
 		Request request;
 		Response response;
 		request.parseRequest(it->second.getReadBuffer());
+		
+		// Check body size limit
+		if (it->second.isBodySizeExceeded(config->getClientMaxBodySize())) {
+			response.setErrorPages(config->getErrorPages(), config->getRoot());
+			it->second.appendWrite(response.errorResponse(413, "Request Entity Too Large"));
+			it->second.clearReadBuffer();
+			return;
+		}
+		
 		if (request.getVersion() != "HTTP/1.1") {
 			response.setErrorPages(config->getErrorPages(), config->getRoot());
 			it->second.appendWrite(response.errorResponse(505, "HTTP Version Not Supported"));

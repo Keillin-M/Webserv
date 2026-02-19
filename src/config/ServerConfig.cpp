@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/06 14:18:38 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/09 18:17:10 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/19 11:55:14 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/config/ServerConfig.hpp"
 
-ServerConfig::ServerConfig() {}
+ServerConfig::ServerConfig() : clientMaxBodySize(1024 * 1024) {} // 1MB default
 
 int ServerConfig::getPort() const { return port; }
 
@@ -23,6 +23,8 @@ std::string ServerConfig::getRoot() const { return root; }
 std::map<int, std::string> ServerConfig::getErrorPages() const { return errorPages; }
 
 std::vector<LocationConfig> ServerConfig::getLocations() const { return locations; }
+
+size_t ServerConfig::getClientMaxBodySize() const { return clientMaxBodySize; }
 
 void ServerConfig::setPort(int n) { port = n; }
 
@@ -36,6 +38,20 @@ void ServerConfig::addErrorPages(int status, const std::string& path) {
 
 void ServerConfig::addLocations(const LocationConfig& location) {
 	locations.push_back(location);
+}
+
+void ServerConfig::setClientMaxBodySize(const std::string& sizeStr) {
+	if (sizeStr.empty())
+		return; // Keep constructor default (1MB)
+	
+	char* endPtr;
+	long value = std::strtol(sizeStr.c_str(), &endPtr, 10);
+	
+	if (*endPtr != '\0' || value < 0) {
+		throw std::runtime_error("Invalid client_max_body_size value: " + sizeStr);
+	}
+	
+	clientMaxBodySize = static_cast<size_t>(value);
 }
 
 const LocationConfig* ServerConfig::findMatchLocation(const std::string& requestPath) const {

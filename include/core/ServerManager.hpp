@@ -25,6 +25,7 @@
 #include <netinet/in.h>
 #include <map>
 #include <set>
+#include <signal.h>
 #include "Client.hpp"
 #include "../http/Request.hpp"
 #include "../http/Response.hpp"
@@ -49,7 +50,8 @@ class ServerManager {
 		~ServerManager();
 		
 		void initialize(std::vector<ServerConfig>& configs);
-		void run();
+		void run(volatile sig_atomic_t& running);
+		void shutdown();
 };
 
 #endif

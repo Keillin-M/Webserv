@@ -1,6 +1,11 @@
 *This project has been created as part of the 42 curriculum by kmaeda, gabrsouz, tmarcos*
 
+## Description
+
 This repository implements a minimal HTTP server for the 42 School curriculum.
+
+
+`webserv` is a small, standards-oriented HTTP server implemented in C++ as part of the 42 School curriculum. The goal is to implement a robust server that correctly parses HTTP requests and serves responses, supporting core features expected in the project evaluation: configuration parsing, multiple virtual hosts, static file serving, CGI execution, proper error handling, and concurrent client handling using non-blocking I/O.
 
 Sections included:
 - **Description** presenting the project and goals.
@@ -8,12 +13,7 @@ Sections included:
 - **Resources** and AI usage disclosure.
 - Additional sections: features, project structure, development notes.
 
-**webserv**
-
-**About**
-`webserv` is a small, standards-oriented HTTP server implemented in C++ as part of the 42 School curriculum. The goal is to implement a robust server that correctly parses HTTP requests and serves responses, supporting core features expected in the project evaluation: configuration parsing, multiple virtual hosts, static file serving, CGI execution, proper error handling, and concurrent client handling using non-blocking I/O.
-
-**Key goals**
+### Key goals
 - Correct HTTP request parsing and response generation according to relevant RFCs.
 - Support for common HTTP methods (GET, POST, DELETE) as required by the subject.
 - Configuration-driven virtual hosts and locations.
@@ -22,7 +22,9 @@ Sections included:
 - Concurrency via `poll`/`select`/`kqueue` or similar non-blocking approach.
 - Proper handling of persistent connections and chunked transfer when needed.
 
-**Installation / Build**
+## Instructions
+
+### Installation / Build
 Prerequisites: a POSIX system (Linux/macOS), a C++ compiler supporting C++98 and standard build tools.
 
 Build steps:
@@ -35,7 +37,7 @@ cd webserv
 make
 ```
 
-**Run**
+### Run
 ```bash
 # run server with a config
 ./webserv config/default.conf
@@ -44,14 +46,25 @@ make
 curl -v http://localhost:8080/
 ```
 
-**Development / Debugging**
+### Testing
+To run the test suite, use:
+```bash
+make test
+```
+This will execute the available automated and integration tests.
+
+If you prefer not to use `make test` or want to see detailed instructions for manual, advanced, or individual testing, see [tests/TEST_GUIDE.md](tests/TEST_GUIDE.md). This guide covers all test scripts, manual test commands, troubleshooting, and how to extend test coverage.
+
+You can also use your web browser to manually test the server and interact with the provided frontend pages. Simply navigate to `http://localhost:8080/` or explore the pages in `www/pages/` for a user-friendly interface to test features and error handling.
+
+### Development / Debugging
 - Rebuild: `make re`
 - Run under Valgrind (Linux) to check for leaks:
 ```bash
 valgrind --leak-check=full ./webserv config/default.conf
 ```
 
-**Project Structure (example)**
+### Project Structure (example)
 ```
 webserv/
 ├── include/           # headers (e.g., Client.hpp, Server.hpp, Request.hpp, Response.hpp)
@@ -61,7 +74,12 @@ webserv/
 └── README.md
 ```
 
-**Features & Architecture**
+## Technical Choices
+
+### Concurrency: Why `poll`?
+For handling multiple simultaneous client connections, we chose the `poll` system call. `poll` allows efficient monitoring of many file descriptors (sockets) for readiness to read or write, without the limitations of `select` (such as a fixed maximum number of descriptors). This approach enables scalable, non-blocking I/O and is portable across POSIX systems. It was selected for its simplicity, reliability, and suitability for the project requirements.
+
+## Features & Architecture
 - Configuration Parser: reads server blocks, listen directives, server_name, locations, root, index, cgi, etc.
 - Networking: non-blocking sockets, socket setup, binding, listening, and I/O multiplexing (poll/select/kqueue).
 - Request Processing: parsing request line, headers, body; handling chunked bodies when required.
@@ -70,24 +88,29 @@ webserv/
 - CGI Support: spawn CGI processes and pipe input/output to produce dynamic responses.
 - Concurrency: handle multiple clients without blocking the main loop.
 
-**Error Handling & Validation**
+### Error Handling & Validation
 - Validate configuration files and report clear error messages.
 - Provide HTTP-compliant error responses for malformed requests or server errors.
 
-**Resources**
-- HTTP/RFC references: RFC 7230–7235 (message syntax and routing)
-- POSIX sockets documentation
-- Common tutorials for writing HTTP servers in C/C++
 
-**AI Usage Disclosure**
-AI assistance was used to draft and format parts of this README (structure and wording). Implementation and code were written and reviewed by the project authors.
+## Resources
+- [RFC 7230–7235](https://datatracker.ietf.org/doc/html/rfc7230) — HTTP/1.1 message syntax and routing (used for protocol compliance)
+- [POSIX sockets documentation](https://man7.org/linux/man-pages/man7/socket.7.html) — for network programming
+- [Beej's Guide to Network Programming](https://beej.us/guide/bgnet/) — tutorial for socket programming in C/C++
 
-**Contributors**
+### AI Usage Disclosure
+AI assistance was used to draft and format parts of this README (structure, section headers, and wording). All implementation and code were written and reviewed by the project authors. No code was generated by AI for the server itself.
+
+
+
+## Contributors
 - kmaeda
 - gabrsouz
 - tmarcos
 
-**License & Academic Notice**
+
+## License & Academic Notice
 This project is part of the 42 School curriculum and follows the institution's academic guidelines.
+
 
 Created with ❤️ by 42 students

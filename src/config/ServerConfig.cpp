@@ -81,13 +81,9 @@ void ServerConfig::validate() {
 		throw std::runtime_error("Invalid port number");
 	if (root.empty())
 		root = "./www";
-
 	for (std::vector<LocationConfig>::iterator it = locations.begin();
-		it != locations.end();
-		++it) {
+		it != locations.end(); ++it)
 			it->validate();
-		}
-		
 	if (locations.empty()) {
 		LocationConfig defaultLoc;
 		defaultLoc.setPath("/");

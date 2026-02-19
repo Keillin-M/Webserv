@@ -1,92 +1,154 @@
-# Error Page Testing Guide
+# Webserv Test Guide
 
-## Files Created
+## Overview
 
-### Custom Error Pages
-- `config/www/400.html` - Bad Request
-- `config/www/403.html` - Forbidden
-- `config/www/404.html` - Not Found
-- `config/www/405.html` - Method Not Allowed
-- `config/www/500.html` - Internal Server Error
-- `config/www/501.html` - Not Implemented
-- `config/www/505.html` - HTTP Version Not Supported
+This guide describes how to run and validate all major tests for your Webserv project, including error pages, CGI, stress scenarios, scalability, redirects, and front-end validation.
 
-### Configuration Files
-- `config/test.conf` - Webserv config with error_page directives
-- `config/nginx_test.conf` - Nginx config for comparison (optional)
+---
 
-### Test Script
-- `test_error_pages.sh` - Automated test suite
+## 🌐 Testing in Your Browser
 
-## Quick Start
+You can also test the server and error handling visually using any web browser. Just start your server and navigate to:
 
-### 1. Start Webserv
+- `http://localhost:8080/` — Main index page
+- `http://localhost:8080/pages/` — Browse available frontend pages
+- Try visiting non-existent URLs (e.g., `/nonexistent.html`) or forbidden paths to see custom error pages
+
+The frontend in `www/pages/` provides user-friendly interfaces for exploring features, forms, and error handling. This is a great way to validate both backend and frontend integration.
+
+
+## 📂 Test Assets and Structure
+
+- **Custom Error Pages**:  
+	Place in `www/errors/`  
+	- `www/errors/400.html` — Bad Request  
+	- `www/errors/403.html` — Forbidden  
+	- `www/errors/404.html` — Not Found  
+	- `www/errors/405.html` — Method Not Allowed  
+	- `www/errors/500.html` — Internal Server Error  
+	- `www/errors/501.html` — Not Implemented  
+	- `www/errors/505.html` — HTTP Version Not Supported  
+
+- **Config files**:  
+	- `config/default.conf` — Main server config (edit for different port/tests if needed)
+
+- **Test Scripts** (run from repo root):
+	- `tests/cgi_test.py` — CGI and Python script tests
+	- `tests/full_test.sh` — Full integration and error page tests
+
+- **Stress Testing with Siege**:
+	- `siege -c10 -t30S http://localhost:8080/` — 10 concurrent users for 30 seconds
+	- `siege -c20 -r100 http://localhost:8080/` — 20 concurrent users, 100 requests each
+
+---
+
+## 🚀 Quick Start: Full Automated Test Suite
+
+1. **Start Webserv**
+		```bash
+		./webserv config/default.conf
+		```
+
+2. **Run All Tests**
+		```bash
+		bash tests/full_test.sh
+		```
+
+---
+
+## 🛠️ Running Specific Tests
+
+You can run any script individually. Examples:
+
 ```bash
-./webserv config/test.conf
+bash tests/cgi_test.py                # CGI and Python script tests
+bash tests/full_test.sh               # Full integration and error page tests
 ```
 
-### 2. Run Tests
-```bash
-./test_error_pages.sh
-```
+---
 
-## Manual Tests
+## 🔎 Manual Testing Examples
 
-### Test 404 - Missing File
-```bash
-curl http://localhost:8080/nonexistent.html
-```
-Should return custom 404 error page.
+- **404 Not Found:**
+		```bash
+		curl -i http://localhost:8080/nonexistent.html
+		```
+		Should return a `404` status *and* your custom 404 HTML.
 
-### Test 405 - Wrong Method
-```bash
-curl -X POST http://localhost:8080/
-```
-Should return custom 405 error page (location only allows GET).
+- **405 Method Not Allowed:**
+		```bash
+		curl -X POST http://localhost:8080/
+		```
 
-### Test 403 - Forbidden
-```bash
-curl "http://localhost:8080/../etc/passwd"
-```
-Should return custom 403 error page (directory traversal blocked).
+- **403 Forbidden (directory traversal):**
+		```bash
+		curl "http://localhost:8080/../etc/passwd"
+		```
 
-### Test 400 - Bad Request
-```bash
-curl -X POST http://localhost:8080/upload
-```
-Should return custom 400 error page (empty POST body).
+- **Bad Request (400):**
+		```bash
+		curl -X POST http://localhost:8080/upload
+		```
 
-### Test 501 - Not Implemented
-```bash
-curl -X PATCH http://localhost:8080/
-```
-Should return custom 501 error page (PATCH not implemented).
+- **501 Not Implemented:**
+		```bash
+		curl -X PATCH http://localhost:8080/
+		```
 
-### Test 200 - Success
-```bash
-curl http://localhost:8080/
-```
-Should return the index.html page successfully.
+---
 
-## With Nginx Comparison (Optional)
+## 📝 Expected Results
 
-### 1. Start Nginx
-```bash
-sudo nginx -c $PWD/config/nginx_test.conf
-```
+- ✅ Correct HTTP status code (`404`, `403`, etc)
+- ✅ Response body contains your custom error page (include a marker for script detection, e.g., `Custom error page from webserv`)
+- ✅ No server crashes or resource leaks under stress
 
-### 2. Run Comparison Tests
-The test script will automatically compare webserv (port 8080) with nginx (port 8081).
+## 🐍 CGI Tests
 
-### 3. Stop Nginx
-```bash
-sudo nginx -s stop
-```
+You can test CGI script execution using curl or your browser. Example:
 
-## Expected Results
+- **Python CGI (curl):**
+	```bash
+	curl -i http://localhost:8080/cgi-bin/py/hello.py
+	curl -i http://localhost:8080/cgi-bin/py/env.py
+	```
+	You should see output generated by the Python scripts.
 
-All error responses should:
-1. ✅ Return correct HTTP status code
-2. ✅ Display custom HTML error page
-3. ✅ Include "Custom error page from webserv" marker
-4. ✅ Match nginx behavior for status codes
+- **PHP CGI (curl):**
+	```bash
+	curl -i http://localhost:8080/cgi-bin/php/hello.php
+	```
+
+- **In the browser:**
+	- Visit `http://localhost:8080/cgi-bin/py/hello.py` or similar URLs to see CGI output rendered in your browser.
+
+If a script is missing or fails, you should see the appropriate error page (e.g., 404 or 500).
+
+## 🔀 Redirection Tests
+
+You can test HTTP redirection responses using curl or your browser. Example:
+
+- **301/302/307 Redirect (curl):**
+	```bash
+	curl -i http://localhost:8080/redirect-301
+	curl -i http://localhost:8080/redirect-302
+	curl -i http://localhost:8080/redirect-307
+	```
+	You should see a `Location:` header and the appropriate status code (301, 302, or 307).
+
+- **In the browser:**
+	- Visit `http://localhost:8080/redirect-302` or similar URLs. You should be redirected to the target page (e.g., `/pages/about.html`).
+
+---
+
+## ☑️ Tips and Troubleshooting
+
+- **If tests fail with “default error page”:**  
+	- Ensure all needed HTML files are present and readable in `www/errors/`.
+	- Check your webserv config error_page directives match those files.
+	- The server process must have permissions to read them.
+	- Double-check your server actually loads and returns these files on error.
+
+- **If CGI/POST/Uploads fail:**  
+	- Confirm scripts in `www/cgi-bin/` are present and executable and `cgi_path`/`cgi_extension` in config is correct.
+	- Validate your config for allowed methods in location blocks.

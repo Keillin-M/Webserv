@@ -6,7 +6,7 @@
 /*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/10 11:25:08 by gabrsouz          #+#    #+#             */
-/*   Updated: 2026/02/19 12:00:12 by gabrsouz         ###   ########.fr       */
+/*   Updated: 2026/02/19 14:16:55 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,10 @@ std::string Response::handlePost(const std::string& requestBody, const std::stri
     if (!file.is_open())
         return errorResponse(500, "Failed to create file");
     file.write(requestBody.data(), requestBody.size());
+    if (file.fail()) {
+        file.close();
+        return errorResponse(500, "Failed to write file data");
+    }
     file.close();
     status = 201;  // Created
     body = "Upload successful";

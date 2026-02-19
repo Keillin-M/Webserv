@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CGI.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kmaeda <kmaeda@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: gabrsouz <gabrsouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 14:40:53 by kmaeda            #+#    #+#             */
-/*   Updated: 2026/02/13 16:46:19 by kmaeda           ###   ########.fr       */
+/*   Updated: 2026/02/19 14:22:58 by gabrsouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,6 +112,7 @@ void CGI::buildEnvironment(const Request& req, const ServerConfig& server, const
 
 std::string CGI::execute(const Request& req, const ServerConfig& server, const std::string& scriptPath, const std::string& interpreterPath) {
 	int pipeIn[2], pipeOut[2];
+	int status = 0;
 	Response response;
 	if (pipe(pipeIn) == -1 || pipe(pipeOut) == -1)
 	 	return (response.errorResponse(500, "CGI: pipe() failed"));
@@ -141,7 +142,18 @@ std::string CGI::execute(const Request& req, const ServerConfig& server, const s
 	}
 	close(pipeIn[0]);
 	close(pipeOut[1]);
-	write(pipeIn[1], req.getBody().c_str(), req.getBody().length());
+	// Write request body to CGI stdin with error checking
+	ssize_t bodySize = static_cast<ssize_t>(req.getBody().length());
+	if (bodySize > 0) {
+		ssize_t written = write(pipeIn[1], req.getBody().c_str(), bodySize);
+		if (written != bodySize) {
+			close(pipeIn[1]);
+			close(pipeOut[0]);
+			waitpid(pid, &status, 0);
+			freeEnvArray(envp);
+			return (response.errorResponse(500, "CGI: failed to write request body"));
+		}
+	}
 	close(pipeIn[1]);
 
 	std::string output;
@@ -149,9 +161,15 @@ std::string CGI::execute(const Request& req, const ServerConfig& server, const s
 	ssize_t bytesRead;
 	while ((bytesRead = read(pipeOut[0], buffer, sizeof(buffer))) > 0)
 		output.append(buffer, bytesRead);
+	// Check for read error
+	if (bytesRead < 0) {
+		close(pipeOut[0]);
+		waitpid(pid, &status, 0);
+		freeEnvArray(envp);
+		return (response.errorResponse(500, "CGI: failed to read script output"));
+	}
 	close(pipeOut[0]);
 
-	int status = 0;
 	waitpid(pid, &status, 0);
 	freeEnvArray(envp);
 	if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
